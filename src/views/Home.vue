@@ -1,11 +1,13 @@
 <template>
   <div class="main">
-    <div class="title">游迹</div>
-    <div class="btns">
-      <a-button class="btn" type="primary" @click="toLogin">登录</a-button>
-    <a-button class="btn" type="default" @click="toRegister">注册</a-button>
+    <div class="bg-blur"></div>
+    <div>
+      <div class="title">游迹<br>后台管理系统</div>
+      <div class="btns">
+        <a-button class="btn" type="primary" @click="toLogin">登录</a-button>
+        <a-button class="btn" type="default" @click="toRegister">注册</a-button>
+      </div>
     </div>
-    
   </div>
 </template>
 
@@ -38,13 +40,14 @@
   width:500px;
   height:250px;
   font-size:30px;
+  color: white;
   /* border: solid red 1px; */
 }
 .main{
-  
   width:100%;
   height:700px;
-  background-color: antiquewhite;
+  /* background-color: antiquewhite; */
+  background-color: transparent;
 }
 .btn{
   font-size:18px;
@@ -57,5 +60,18 @@
   width:500px;
   height:100px;
   /* border: solid red 1px; */
+}
+
+.bg-blur {
+  background: url('../assets/home_background.png');
+  height: 100%;
+  width: 100%;
+  float: left;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  filter: blur(4px);
+  z-index: -1;
+  position: absolute;
 }
 </style>
