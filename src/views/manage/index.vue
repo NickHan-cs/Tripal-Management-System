@@ -38,22 +38,28 @@
           <a-sub-menu key="sub3">
             <span slot="title"><a-icon type="notification" />信息推送</span>
             <a-menu-item key="9">
-              option9
+              新信息
             </a-menu-item>
             <a-menu-item key="10">
-              option10
-            </a-menu-item>
-            <a-menu-item key="11">
-              option11
-            </a-menu-item>
-            <a-menu-item key="12">
-              option12
+              已推送
             </a-menu-item>
           </a-sub-menu>
+          <a-menu-item key="11">
+            <a-icon type="user" />用户管理
+          </a-menu-item>
+          <a-menu-item key="11">
+            <a-icon type="file-image" />游记管理
+          </a-menu-item>
+          <a-menu-item key="11">
+            <a-icon type="environment" />地点管理
+          </a-menu-item>
+          <a-menu-item key="11">
+            <a-icon type="team" />同行管理
+          </a-menu-item>
         </a-menu>
       </a-layout-sider>
       <a-layout style="padding: 0 24px 24px;min-height:600px">
-        <router-view style="min-height:600px"></router-view>
+        <!-- <router-view style="min-height:600px"></router-view> -->
       </a-layout>
     </a-layout>
   </a-layout>
