@@ -2,11 +2,11 @@
   <div class="main">
     <div class="bg-blur"></div>
     <div>
-      <div class="title">游迹<br>后台管理系统</div>
-      <div class="btns">
-        <a-button class="btn" type="primary" @click="toLogin">登录</a-button>
-        <a-button class="btn" type="default" @click="toRegister">注册</a-button>
-      </div>
+        <div class="title">游迹<br>后台管理系统</div>
+        <div class="btns">
+          <a-button class="btn" type="primary" @click="toLogin">登录</a-button>
+          <a-button class="btn" type="default" @click="toRegister">注册</a-button>
+        </div>
     </div>
   </div>
 </template>
@@ -74,4 +74,11 @@
   z-index: -1;
   position: absolute;
 }
+
+/* .bottom {
+  width: 600px;
+  height: 400px;
+  padding-top: 100px;
+  background-color: rgba(255, 255, 255, 0.2);
+} */
 </style>
