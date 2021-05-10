@@ -26,13 +26,13 @@
       <a-layout-sider width="200" style="background: #fff">
         <a-menu
           mode="inline"
-          :default-selected-keys="['1']"
+          :default-selected-keys="['5']"
           :default-open-keys="['sub2']"
           :style="{ height: '100%', borderRight: 0 }"
         >
-          <a-menu-item key="1">
+          <!-- <a-menu-item key="1">
               首页
-            </a-menu-item>
+            </a-menu-item> -->
           <a-sub-menu key="sub2">
             <span slot="title"><a-icon type="laptop" />游记审核</span>
             <a-menu-item key="5">

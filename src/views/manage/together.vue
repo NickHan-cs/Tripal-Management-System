@@ -7,27 +7,57 @@
           <a-button style="margin:0 5px" type="primary" @click="add">查看</a-button> -->
           <a-button style="margin:0px 10px 15px 0px" type="primary" @click="add">查看</a-button>
           <a-button style="margin:0 5px" @click="deleteTogethers">删除</a-button>
-          <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data"  :pagination="false">
-            <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text}}</a>
-          </a-table>
-          <br>
-          <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
+          <a-spin :spinning="spinning">
+            <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data"  :pagination="false">
+              <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text}}</a>
+            </a-table>
+            <br>
+            <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
+          </a-spin>
         </div>
         <div v-else style="margin:10px 0 10px 15px;">
-          <a-descriptions title="User Info">
-          <a-descriptions-item label="UserName">
-            {{data[pane.key-1].name}}
-          </a-descriptions-item>
-          <a-descriptions-item label="Age">
-            {{data[pane.key-1].age}}
-          </a-descriptions-item>
-          <a-descriptions-item label="Remark">
-            empty
-          </a-descriptions-item>
-          <a-descriptions-item label="Address">
-          {{data[pane.key-1].address}}
-          </a-descriptions-item>
-        </a-descriptions>
+          <a-descriptions title="同行活动信息" bordered style="word-break: break-all;word-wrap: break-word;">
+            <a-descriptions-item label="编号">
+              {{data[pane.key-1].id}}
+            </a-descriptions-item>
+            <a-descriptions-item label="地点">
+              {{data[pane.key-1].position.name}}
+            </a-descriptions-item>
+            <a-descriptions-item label="人数">
+              {{data[pane.key-1].capacity}}
+            </a-descriptions-item>
+            <a-descriptions-item label="发布者编号">
+              {{data[pane.key-1].owner.id}}
+            </a-descriptions-item>
+            <a-descriptions-item label="发布者名称">
+              {{data[pane.key-1].owner.name}}
+            </a-descriptions-item>
+            <a-descriptions-item label="发布者昵称">
+              {{data[pane.key-1].owner.nickname}}
+            </a-descriptions-item>
+            <a-descriptions-item label="活动发布时间" :span="1.5">
+              {{data[pane.key-1].createTime}}
+            </a-descriptions-item>
+            <a-descriptions-item label="报名截止时间" :span="1.5">
+              {{data[pane.key-1].deadlineTime}}
+            </a-descriptions-item>
+            <a-descriptions-item label="活动开始时间" :span="1.5">
+              {{data[pane.key-1].startTime}}
+            </a-descriptions-item>
+            <a-descriptions-item label="活动结束时间" :span="1.5">
+              {{data[pane.key-1].endTime}}
+            </a-descriptions-item>
+            <a-descriptions-item label="活动标题" :span="3">
+              {{data[pane.key-1].title}}
+            </a-descriptions-item>
+            <a-descriptions-item label="活动内容" :span="3">
+              {{data[pane.key-1].content}}
+            </a-descriptions-item>
+            <a-descriptions-item label="活动参与者" :span="3">
+              <a-table v-if="data[pane.key-1].fellows.length > 0" class="fellowtlb" style="width: 600px" :pagination="false" :columns="fellowColumns" :data-source="data[pane.key-1].fellows" rowKey="id">
+              </a-table>
+            </a-descriptions-item>
+          </a-descriptions>
         </div>
     
       </a-tab-pane>
@@ -67,6 +97,21 @@ const columns = [
     dataIndex: 'createTime',
   },
 ];
+const fellowColumns = [
+  {
+    title: '用户编号',
+    dataIndex: 'id',
+    scopedSlots: { customRender: 'id' },
+  },
+  {
+    title: '用户名称',
+    dataIndex: 'name'
+  },
+  {
+    title: '用户昵称',
+    dataIndex: 'nickname'
+  }
+]
 
 // const data = [
 //   {
@@ -102,8 +147,10 @@ export default {
       { title: '同行管理', data:[],  key: '0' ,closable: false },
     ];
     return {
+      spinning:true,
       data:[],
       columns,
+      fellowColumns,
       activeKey: panes[0].key,
       panes,
       selectedRows:[],
@@ -126,7 +173,7 @@ export default {
         },
         getCheckboxProps: record => ({
           props: {
-            disabled: record.name === 'Disabled User', // Column configuration not to be checked
+            disabled: record.id === 'Disabled User', // Column configuration not to be checked
             title: record.id,
           },
         }),
@@ -134,6 +181,7 @@ export default {
     },
   },
   mounted(){
+    this.spinning = true;
     this.getTogethers({"page":"1"});
   },
   methods: {
@@ -156,9 +204,16 @@ export default {
           item.ownerId = item.owner.id;
           item.ownerName = item.owner.name;
           let time_array = item.time.split("T");
-          item.createTime = time_array[0] + " " + time_array[1].split(".")[0];
+          item.createTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
+          time_array = item.deadline.split("T");
+          item.deadlineTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
+          time_array = item.start_time.split("T");
+          item.startTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
+          time_array = item.end_time.split("T");
+          item.endTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
         })
         this.panes[0].data = this.data;
+        this.spinning = false;
       }).catch((error) => {
         if (error.response.status == 403) {
           this.visible = true;
@@ -235,7 +290,7 @@ export default {
           }
         }
         if(flag == 0){
-          panes.push({ title: item.name, data:item.data, key: item.key });
+          panes.push({ title: item.id, data:item.data, key: item.key });
          
         }
          this.activeKey = item.key;
@@ -256,7 +311,7 @@ export default {
         }
         console.log("flag:"+flag);
         if(flag == 0){
-          panes.push({ title: item.name, data:item.data, key: item.key });
+          panes.push({ title: item.id, data:item.data, key: item.key });
           i=item.key;
           console.log(i);
           this.activeKey = i;
@@ -286,3 +341,9 @@ export default {
   },
 };
 </script>
+
+<style>
+.fellowtlb .ant-table-thead > tr > th {
+  background: transparent;
+}
+</style>

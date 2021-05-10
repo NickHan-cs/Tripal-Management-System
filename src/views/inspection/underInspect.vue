@@ -24,31 +24,56 @@
           <a-modal v-model="refuseVisible" title="不通过原因" @ok="refuseHandleOk" @cancel="refuseHandleCancel">
             <a-textarea v-model="reason" auto-size />
           </a-modal>
-          <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
-            <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text }} </a>
-            <template v-slot:action>
-              <a-button style="margin-right:10px" size="small" type="primary">通过</a-button>
-              <a-button size="small" >不通过</a-button>
-            </template>
-          </a-table>
-          <br>
-          <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
+          <a-modal v-model="refuseSingleVisible" title="不通过原因" @ok="refuseSingleHandleOk" @cancel="refuseSingleHandleCancel">
+            <a-textarea v-model="singleReason" auto-size />
+          </a-modal>
+          <a-spin :spinning="spinning">
+            <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
+              <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text }} </a>
+              <template slot="action" slot-scope="record" >
+                <a-button style="margin-right:10px" size="small" type="primary" @click="passSingleRecord(record)">通过</a-button>
+                <a-button size="small" @click="showSingleModal(record)">不通过</a-button>
+              </template>
+            </a-table>
+            <br>
+            <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
+          </a-spin>
         </div>
         <div v-else style="margin:10px 0 10px 15px;">
-          <a-descriptions title="Record Info">
-          <a-descriptions-item label="Title">
-            {{data[pane.key-1].titleName}}
-          </a-descriptions-item>
-          <a-descriptions-item label="Username">
-            {{data[pane.key-1].username}}
-          </a-descriptions-item>
-          <a-descriptions-item label="Remark">
-            empty
-          </a-descriptions-item>
-          <a-descriptions-item label="Reason">
-          {{data[pane.key-1].reason}}
-          </a-descriptions-item>
-        </a-descriptions>
+          <a-descriptions title="游记信息" bordered style="word-break: break-all;word-wrap: break-word;">
+            <a-descriptions-item label="游记标题" :span="3">
+              {{data[pane.key-1].title}}
+            </a-descriptions-item>
+            <a-descriptions-item label="游记编号">
+              {{data[pane.key-1].id}}
+            </a-descriptions-item>
+            <a-descriptions-item label="游记地点">
+              {{data[pane.key-1].positionName}}
+            </a-descriptions-item>
+            <a-descriptions-item label="发布时间">
+              {{data[pane.key-1].createTime}}
+            </a-descriptions-item>
+            <a-descriptions-item label="用户编号">
+              {{data[pane.key-1].owner.id}}
+            </a-descriptions-item>
+            <a-descriptions-item label="用户名称">
+              {{data[pane.key-1].owner.name}}
+            </a-descriptions-item>
+            <a-descriptions-item label="用户昵称">
+              {{data[pane.key-1].owner.nickname}}
+            </a-descriptions-item>
+            <a-descriptions-item label="游记内容" :span="3">
+              {{data[pane.key-1].content}}
+            </a-descriptions-item>
+            <a-descriptions-item label="游记封面" :span="3">
+              <img :src="data[pane.key-1].coverImage" width="500" alt="">
+            </a-descriptions-item>
+            <a-descriptions-item label="游记图片" :span="3">
+              <div v-for="item in data[pane.key-1].recordImages" :key="item">
+                <img :src="item" width="500" alt="">
+              </div>
+            </a-descriptions-item>
+          </a-descriptions>
         </div>
     
       </a-tab-pane>
@@ -130,6 +155,7 @@ export default {
       { title: '待审核', data:[],  key: '0' ,closable: false },
     ];
     return {
+      spinning:true,
       data:[],
       searchType: "id",
       columns,
@@ -140,7 +166,10 @@ export default {
       page: 1,
       pageNum: 1,
       refuseVisible: false,
+      refuseSingleVisible: false,
       reason: "",
+      singleReason: "",
+      singleRecord: null,
       visible: false,
       confirmLoading: false,
       ModalText: '您的登录信息已过期，请重新登录'
@@ -163,9 +192,14 @@ export default {
     },
   },
   mounted(){
+    this.spinning = true;
     this.getRecords({"page": "1", "forbidden": "2"});
   },
   methods: {
+    showSingleModal(record) {
+      this.singleRecord = record;
+      this.refuseSingleVisible = true;
+    },
     showModal() {
       this.refuseVisible = true;
     },
@@ -189,9 +223,18 @@ export default {
           item.ownerName = item.owner.name;
           item.positionName = item.position.name;
           let time_array = item.time.split("T");
-          item.createTime = time_array[0] + " " + time_array[1].split(".")[0];
+          item.createTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
+          item.positionName = item.position == null ? null : item.position.name;
+          if (item.cover != null) {
+            item.coverImage = "https://tra-fr-2.zhouyc.cc/api/core/images/" + item.cover + "/data/";
+          }
+          item.recordImages = []
+          item.images.forEach((image) => {
+            item.recordImages.push("https://tra-fr-2.zhouyc.cc/api/core/images/" + image + "/data/");
+          })
         })
         this.panes[0].data = this.data;
+        this.spinning = false;
       }).catch((error) => {
         if (error.response.status == 403) {
           this.visible = true;
@@ -238,14 +281,29 @@ export default {
     onPageChange(page) {
       this.getRecords({"page": page, "forbidden": "2"});
     },
+    passSingleRecord(record) {
+      this.dealRecord({"id": record.id, "status": "0"});
+      this.remove(record.key);
+      this.getRecords({"page": "1", "forbidden": "2"});
+      this.selectedRows = [];
+      this.selectedRowKeys = [];
+    },
     passRecords() {
       this.selectedRows.forEach((item)=>{
-        this.dealRecord({"id": item.id});
+        this.dealRecord({"id": item.id, "status": "0"});
         this.remove(item.key);
       });
       this.getRecords({"page":"1", "forbidden": "2"});
       this.selectedRows = [];
       this.selectedRowKeys = [];
+    },
+    refuseSingleHandleOk() {
+      this.dealRecord({"id": this.singleRecord.id, "status": "1", "reason": this.singleReason});
+      this.remove(this.singleRecord.key);
+      this.getRecords({"page":"1", "forbidden": "2"});
+      this.selectedRows = [];
+      this.selectedRowKeys = [];
+      this.refuseSingleVisible = false;
     },
     refuseHandleOk() {
       // console.log(this.reason);
@@ -257,6 +315,9 @@ export default {
       this.selectedRows = [];
       this.selectedRowKeys = [];
       this.refuseVisible = false;
+    },
+    refuseSingleHandleCancel() {
+      this.refuseSingleVisible = false;
     },
     refuseHandleCancel() {
       this.refuseVisible = false;
@@ -282,11 +343,11 @@ export default {
           }
         }
         if(flag == 0){
-          panes.push({ title: item.titleName, data:item.data, key: item.key });
+          panes.push({ title: item.id, data:item.data, key: item.key });
          
         }
-         this.activeKey = item.key;
-         this.panes = panes;
+        this.activeKey = item.key;
+        this.panes = panes;
     },
     add() {
       const panes = this.panes;
@@ -303,7 +364,7 @@ export default {
         }
         console.log("flag:"+flag);
         if(flag == 0){
-          panes.push({ title: item.titleName, data:item.data, key: item.key });
+          panes.push({ title: item.id, data:item.data, key: item.key });
           i=item.key;
           console.log(i);
           this.activeKey = i;

@@ -7,27 +7,26 @@
           <a-button style="margin:0 5px" type="primary" @click="add">查看</a-button> -->
           <a-button style="margin:0px 10px 15px 0px" type="primary" @click="add">查看</a-button>
           <!-- <a-button style="margin:0 5px" @click="deleteMsgs">删除</a-button> -->
-          <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data"  :pagination="false">
-            <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text}}</a>
-          </a-table>
-          <br>
-          <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
+          <a-spin :spinning="spinning">
+            <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data"  :pagination="false">
+              <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text}}</a>
+            </a-table>
+            <br>
+            <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
+          </a-spin>
         </div>
         <div v-else style="margin:10px 0 10px 15px;">
-          <a-descriptions title="User Info">
-          <a-descriptions-item label="UserName">
-            {{data[pane.key-1].name}}
-          </a-descriptions-item>
-          <a-descriptions-item label="Age">
-            {{data[pane.key-1].age}}
-          </a-descriptions-item>
-          <a-descriptions-item label="Remark">
-            empty
-          </a-descriptions-item>
-          <a-descriptions-item label="Address">
-          {{data[pane.key-1].address}}
-          </a-descriptions-item>
-        </a-descriptions>
+          <a-descriptions title="系统信息" bordered style="word-break: break-all;word-wrap: break-word;">
+            <a-descriptions-item label="信息编号" :span="1">
+              {{data[pane.key-1].id}}
+            </a-descriptions-item>
+            <a-descriptions-item label="发送时间" :span="2">
+              {{data[pane.key-1].createTime}}
+            </a-descriptions-item>
+            <a-descriptions-item label="信息内容" :span="3">
+              {{data[pane.key-1].content}}
+            </a-descriptions-item>
+          </a-descriptions>
         </div>
     
       </a-tab-pane>
@@ -98,6 +97,7 @@ export default {
       { title: '信息管理', data:[],  key: '0' ,closable: false },
     ];
     return {
+      spinning:true,
       data:[],
       columns,
       activeKey: panes[0].key,
@@ -122,7 +122,7 @@ export default {
         },
         getCheckboxProps: record => ({
           props: {
-            disabled: record.name === 'Disabled User', // Column configuration not to be checked
+            disabled: record.id === 'Disabled User', // Column configuration not to be checked
             title: record.id,
           },
         }),
@@ -130,7 +130,8 @@ export default {
     },
   },
   mounted(){
-    this.getMsgs({"page":"1"});
+    this.spinning = true;
+    this.getMsgs({"page":"1", "type": "0"});
   },
   methods: {
     getMsgs(p) {
@@ -150,9 +151,10 @@ export default {
           item.key = key + '';
           key = key + 1;  
           let time_array = item.time.split("T");
-          item.createTime = time_array[0] + " " + time_array[1].split(".")[0];
+          item.createTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
         })
         this.panes[0].data = this.data;
+        this.spinning = false;
       }).catch((error) => {
         console.log(error);
         if (error.response.status == 403) {
@@ -197,7 +199,7 @@ export default {
     //   console.log(value);
     // },
     onPageChange(page) {
-      this.getMsgs({"page": page});
+      this.getMsgs({"page": page, "type": 0});
     },
     // deleteMsgs() {
     //   this.selectedRows.forEach((item)=>{
@@ -231,8 +233,7 @@ export default {
           }
         }
         if(flag == 0){
-          panes.push({ title: item.name, data:item.data, key: item.key });
-         
+          panes.push({ title: item.id, data:item.data, key: item.key });
         }
          this.activeKey = item.key;
          this.panes = panes;
@@ -252,7 +253,7 @@ export default {
         }
         console.log("flag:"+flag);
         if(flag == 0){
-          panes.push({ title: item.name, data:item.data, key: item.key });
+          panes.push({ title: item.id, data:item.data, key: item.key });
           i=item.key;
           console.log(i);
           this.activeKey = i;

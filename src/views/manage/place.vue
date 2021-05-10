@@ -14,11 +14,13 @@
           <a-input-search placeholder="请输入搜索文本" style="width: 300px; margin:0 5px 0 2px"  @search="onSearch" />
           <a-button style="margin:0 5px 0 50px" type="primary" @click="add">查看</a-button>
           <a-button  style="margin:0 5px" @click="deletePlaces">删除</a-button>
-          <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
-            <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text}}</a>
-          </a-table>
-          <br>
-          <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" /> 
+          <a-spin :spinning="spinning">
+            <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
+              <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text}}</a>
+            </a-table>
+            <br>
+            <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
+          </a-spin>
         </div>
         <div v-else style="margin:10px 0 10px 15px;">
           <a-descriptions title="User Info">
@@ -96,6 +98,7 @@ export default {
       { title: '地点管理', data:[],  key: '0' ,closable: false },
     ];
     return {
+      spinning:true,
       data:[],
       searchType: "id",
       searchText: "",
@@ -130,6 +133,7 @@ export default {
     },
   },
   mounted(){
+    this.spinning = true;
     this.getPlaces({"page":"1"});
   },
   methods: {
@@ -152,6 +156,7 @@ export default {
           key = key + 1;
         })
         this.panes[0].data = this.data;
+        this.spinning = false;
       }).catch((error) => {
         if (error.response.status == 403) {
           this.visible = true;

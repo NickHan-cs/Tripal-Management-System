@@ -25,7 +25,7 @@ const routes = [
     path: '/index',
     name: 'index',
     component: () => import('../views/manage/index.vue'),
-    // redirect:"/index",
+    redirect:"/underInspect",
     children:[
       {
         path: "/newMsg",

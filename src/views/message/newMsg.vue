@@ -76,8 +76,11 @@ export default {
     openNotificationWithIcon(type) {
       this.$notification[type]({
         message: '发送成功',
-        // description:
-        //   'This is the content of the notification. This is the content of the notification. This is the content of the notification.',
+      });
+    },
+    openNotificationWithIcon400(type) {
+      this.$notification[type]({
+        message: '信息内容不能超过400字',
       });
     },
     allUsersChange() {
@@ -149,6 +152,8 @@ export default {
           console.log(error);
           if (error.response.status == 403) {
             this.visible = true;
+          } else if (error.response.status == 400) {
+            this.openNotificationWithIcon400('error')
           }
         });
       }

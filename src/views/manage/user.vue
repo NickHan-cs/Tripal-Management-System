@@ -17,28 +17,63 @@
           <a-input-search placeholder="请输入搜索文本" style="width: 300px; margin:0 5px 0 2px"  @search="onSearch" />
           <a-button style="margin:0 5px 0 50px" type="primary" @click="add">查看</a-button>
           <a-button  style="margin:0 5px" @click="deleteUsers">删除</a-button>
-          <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
-            <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{text}}</a>
-          </a-table>
-          <br>
-          <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
+          <a-spin :spinning="spinning">
+            <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
+              <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{text}}</a>
+            </a-table>
+            <br>
+            <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
+          </a-spin>
         </div>
         <div v-else style="margin:10px 0 10px 15px;">
-          <a-descriptions title="用户信息">
-            <a-descriptions-item label="用户编号">
+          <a-descriptions title="用户信息" bordered>
+            <a-descriptions-item label="编号">
               {{data[pane.key-1].id}}
             </a-descriptions-item>
-            <a-descriptions-item label="用户名称">
+            <a-descriptions-item label="名称">
               {{data[pane.key-1].name}}
             </a-descriptions-item>
-            <a-descriptions-item label="用户昵称">
+            <a-descriptions-item label="昵称">
               {{data[pane.key-1].nickname}}
             </a-descriptions-item>
-            <a-descriptions-item label="Remark">
-              empty
+            <a-descriptions-item label="性别">
+              {{data[pane.key-1].gender}}
+            </a-descriptions-item>
+            <a-descriptions-item label="生日">
+              {{data[pane.key-1].birthday}}
+            </a-descriptions-item>
+            <a-descriptions-item label="常用地理位置">
+              {{data[pane.key-1].positionName}}
+            </a-descriptions-item>
+            <a-descriptions-item label="联系方式">
+              {{data[pane.key-1].phone}}
+            </a-descriptions-item>
+            <a-descriptions-item label="邮箱">
+              {{data[pane.key-1].email}}
             </a-descriptions-item>
             <a-descriptions-item label="创建时间">
-            {{data[pane.key-1].time}}
+              {{data[pane.key-1].createTime}}
+            </a-descriptions-item>
+            <a-descriptions-item label="个性签名" :span="3">
+              {{data[pane.key-1].sign}}
+            </a-descriptions-item>
+            <a-descriptions-item label="去过的城市数量" :span="1.5">
+              {{data[pane.key-1].cities}}
+            </a-descriptions-item>
+            <a-descriptions-item label="发表的游记数量" :span="1.5">
+              {{data[pane.key-1].travels}}
+            </a-descriptions-item>
+            <a-descriptions-item label="关注数">
+              {{data[pane.key-1].subscription.length}}
+            </a-descriptions-item>
+            <a-descriptions-item label="粉丝数">
+              {{data[pane.key-1].subscribers}}
+            </a-descriptions-item>
+            <a-descriptions-item label="点赞数">
+              {{data[pane.key-1].likes}}
+            </a-descriptions-item>
+            <a-descriptions-item label="用户头像" :span="3">
+              <img :src="data[pane.key-1].iconImage" width="500">
             </a-descriptions-item>
           </a-descriptions>
         </div>
@@ -98,6 +133,7 @@ export default {
       { title: '用户管理', data:[],  key: '0' ,closable: false },
     ];
     return {
+      spinning: true,
       data:[],
       searchType:"id",
       columns,
@@ -131,9 +167,13 @@ export default {
     },
   },
   mounted(){
+    this.spinning = true;
     this.getUsers({"page":"1"});  
   },
   methods: {
+    // getImages(imageIds) {
+
+    // },
     getUsers(p) {
       this.$axios({
         method: "get",
@@ -151,9 +191,13 @@ export default {
           item.key = key + '';
           key = key + 1;
           let time_array = item.time.split("T")
-          item.createTime = time_array[0] + " " + time_array[1].split(".")[0]
+          item.createTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
+          item.positionName = item.position == null ? null : item.position.name;
+          item.gender = item.gender == '0' ? '男' : '女';
+          item.iconImage = "https://tra-fr-2.zhouyc.cc/api/core/images/" + item.icon + "/data/";
         })
         this.panes[0].data = this.data;
+        this.spinning = false;
       }).catch((error) => {
         if (error.response.status == 403) {
           this.visible = true;

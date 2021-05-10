@@ -43,6 +43,7 @@
               password: this.superpassword
             }
           }).then((res) => {
+            console.log(res);
             let superuserToken = 'Bearer ' + res.data.access;
             if (this.username == '' || this.password == '') {
               alert('注册的管理员账号或密码不能为空')

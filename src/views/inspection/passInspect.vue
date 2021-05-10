@@ -19,27 +19,49 @@
         </a-select>
         <a-input-search placeholder="请输入搜索文本" style="width: 300px; margin:0 5px 0 2px"  @search="onSearch" />
         <a-button style="margin:0 5px 0 50px" type="primary" @click="add">查看</a-button>
-        <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
-          <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text }} </a>
-        </a-table>
-        <br>
-        <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
+        <a-spin :spinning="spinning">
+          <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
+            <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text }} </a>
+          </a-table>
+          <br>
+          <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
+        </a-spin>
       </div>
       <div v-else style="margin:10px 0 10px 15px;">
-        <a-descriptions title="Record Info">
-        <a-descriptions-item label="Title">
-          {{data[pane.key-1].titleName}}
-        </a-descriptions-item>
-        <a-descriptions-item label="Username">
-          {{data[pane.key-1].username}}
-        </a-descriptions-item>
-        <a-descriptions-item label="Remark">
-          empty
-        </a-descriptions-item>
-        <a-descriptions-item label="Reason">
-         {{data[pane.key-1].reason}}
-        </a-descriptions-item>
-      </a-descriptions>
+        <a-descriptions title="游记信息" bordered style="word-break: break-all;word-wrap: break-word;">
+          <a-descriptions-item label="游记标题" :span="3">
+            {{data[pane.key-1].title}}
+          </a-descriptions-item>
+          <a-descriptions-item label="游记编号">
+            {{data[pane.key-1].id}}
+          </a-descriptions-item>
+          <a-descriptions-item label="游记地点">
+            {{data[pane.key-1].positionName}}
+          </a-descriptions-item>
+          <a-descriptions-item label="发布时间">
+            {{data[pane.key-1].createTime}}
+          </a-descriptions-item>
+          <a-descriptions-item label="用户编号">
+            {{data[pane.key-1].owner.id}}
+          </a-descriptions-item>
+          <a-descriptions-item label="用户名称">
+            {{data[pane.key-1].owner.name}}
+          </a-descriptions-item>
+          <a-descriptions-item label="用户昵称">
+            {{data[pane.key-1].owner.nickname}}
+          </a-descriptions-item>
+          <a-descriptions-item label="游记内容" :span="3">
+            {{data[pane.key-1].content}}
+          </a-descriptions-item>
+          <a-descriptions-item label="游记封面" :span="3">
+            <img :src="data[pane.key-1].coverImage" width="500" alt="">
+          </a-descriptions-item>
+          <a-descriptions-item label="游记图片" :span="3">
+            <div v-for="item in data[pane.key-1].recordImages" :key="item">
+              <img :src="item" width="500" alt="">
+            </div>
+          </a-descriptions-item>
+        </a-descriptions>
       </div>
    
     </a-tab-pane>
@@ -116,6 +138,7 @@ export default {
       { title: '审核通过', data:[],  key: '0' ,closable: false },
     ];
     return {
+      spinning:true,
       data:[],
       searchType: "id",
       columns,
@@ -147,6 +170,7 @@ export default {
     },
   },
   mounted(){
+    this.spinning = true;
     this.getRecords({"page": "1", "forbidden": "0"});
   },
   methods: {
@@ -170,9 +194,18 @@ export default {
           item.ownerName = item.owner.name;
           item.positionName = item.position.name;
           let time_array = item.time.split("T");
-          item.createTime = time_array[0] + " " + time_array[1].split(".")[0];
+          item.createTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
+          item.positionName = item.position == null ? null : item.position.name;
+          if (item.cover != null) {
+            item.coverImage = "https://tra-fr-2.zhouyc.cc/api/core/images/" + item.cover + "/data/";
+          }
+          item.recordImages = []
+          item.images.forEach((image) => {
+            item.recordImages.push("https://tra-fr-2.zhouyc.cc/api/core/images/" + image + "/data/");
+          })
         })
         this.panes[0].data = this.data;
+        this.spinning = false;
       }).catch((error) => {
         if (error.response.status == 403) {
           this.visible = true;
@@ -229,7 +262,7 @@ export default {
           }
         }
         if(flag == 0){
-          panes.push({ title: item.titleName, data:item.data, key: item.key });
+          panes.push({ title: item.id, data:item.data, key: item.key });
          
         }
          this.activeKey = item.key;
@@ -250,7 +283,7 @@ export default {
         }
         console.log("flag:"+flag);
         if(flag == 0){
-          panes.push({ title: item.titleName, data:item.data, key: item.key });
+          panes.push({ title: item.id, data:item.data, key: item.key });
           i=item.key;
           console.log(i);
           this.activeKey = i;
