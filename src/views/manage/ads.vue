@@ -3,23 +3,16 @@
     <a-tabs v-model="activeKey" type="editable-card" @edit="onEdit" hide-add>
       <a-tab-pane v-for="pane in panes" :key="pane.key" :tab="pane.title" :closable="pane.closable">
         <div v-if="pane.key === '0'">
-          <a-select default-value="id" style="width: 100px; margin:0px 10px 15px 0px" @change="handleChange">
-            <a-select-option value="id">
-              地点编号
-            </a-select-option>
-            <a-select-option value="name">
-              地点名称
-            </a-select-option>
-          </a-select>
-          <a-input-search placeholder="请输入搜索文本" style="width: 300px; margin:0 5px 0 2px"  @search="onSearch" />
-          <a-button style="margin:0 5px 0 50px" type="primary" @click="add">查看</a-button>
-          <a-button  style="margin:0 5px" @click="deletePlaces">删除</a-button>
+          <!-- <a-input-search placeholder="请输入搜索文本" style="width: 300px; margin:0 5px 0 2px"  @search="onSearch" />
+          <a-button style="margin:0 5px 0 50px" type="primary" @click="add">查看</a-button> -->
+          <a-button style="margin:0 10px 15px 0px" type="primary" @click="add">查看</a-button>
+          <a-button  style="margin:0 5px" @click="deleteAds">删除</a-button>
           <a-spin :spinning="spinning">
             <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
               <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text}}</a>
               <template slot="action" slot-scope="record" >
-                <a-button style="margin-right:10px" size="small" type="primary" @click="passSinglePlace(record)">上架</a-button>
-                <a-button size="small" @click="failSinglePlace(record)">下架</a-button>
+                <a-button style="margin-right:10px" size="small" type="primary" @click="passSingleAd(record)">上架</a-button>
+                <a-button size="small" @click="failSingleAd(record)">下架</a-button>
               </template>
             </a-table>
             <br>
@@ -27,35 +20,68 @@
           </a-spin>
         </div>
         <div v-else style="margin:10px 0 10px 15px;">
-          <a-descriptions title="地点信息">
-          <a-descriptions-item label="地点编号" :span="3">
+          <a-descriptions title="广告信息">
+          <a-descriptions-item label="广告编号" :span="3">
             {{data[pane.key-1].id}}
           </a-descriptions-item>
-          <a-descriptions-item label="地点名称" :span="3">
-            {{data[pane.key-1].name}}
-          </a-descriptions-item>
-          <a-descriptions-item label="地点描述" :span="3">
-            <div v-if="descriptionEditable">
-              <a-textarea v-model="data[pane.key-1].description" style="width: 700px" auto-size/>
-              <a-button style="margin-left: 40px; width: 64px; height: 32px" type="primary" @click="descriptionSave">保存</a-button>
-              <a-button style="margin-left: 20px; width: 64px; height: 32px" @click="descriptionCancel">取消</a-button>
+          <a-descriptions-item label="广告标题" :span="3">
+            <div v-if="titleEditable">
+              <a-textarea v-model="data[pane.key-1].title" style="width: 700px" auto-size/>
+              <a-button style="margin-left: 40px; width: 64px; height: 32px" type="primary" @click="titleSave">保存</a-button>
+              <a-button style="margin-left: 20px; width: 64px; height: 32px" @click="titleCancel">取消</a-button>
             </div>
             <div v-else >
-              {{ data[pane.key-1].description }}
+              {{ data[pane.key-1].title }}
               <a-icon
                 type="edit"
                 theme="twoTone"
                 style="fontSize: 18px;"
-                @click="descriptionEdit"
+                @click="titleEdit"
               />
             </div>
           </a-descriptions-item>
-          <a-descriptions-item label="地点图片" :span="3">
-            <div v-if="descriptionEditable">
-
+          <a-descriptions-item label="广告内容" :span="3">
+            <div v-if="contentEditable">
+              <a-textarea v-model="data[pane.key-1].content" style="width: 700px" auto-size/>
+              <a-button style="margin-left: 40px; width: 64px; height: 32px" type="primary" @click="contentSave">保存</a-button>
+              <a-button style="margin-left: 20px; width: 64px; height: 32px" @click="contentCancel">取消</a-button>
             </div>
             <div v-else >
+              {{ data[pane.key-1].content }}
+              <a-icon
+                type="edit"
+                theme="twoTone"
+                style="fontSize: 18px;"
+                @click="contentEdit"
+              />
             </div>
+          </a-descriptions-item>
+          <a-descriptions-item label="广告链接" :span="3">
+            <div v-if="urlEditable">
+              <a-textarea v-model="data[pane.key-1].url" style="width: 700px" auto-size/>
+              <a-button style="margin-left: 40px; width: 64px; height: 32px" type="primary" @click="urlSave">保存</a-button>
+              <a-button style="margin-left: 20px; width: 64px; height: 32px" @click="urlCancel">取消</a-button>
+            </div>
+            <div v-else >
+              {{ data[pane.key-1].url }}
+              <a-icon
+                type="edit"
+                theme="twoTone"
+                style="fontSize: 18px;"
+                @click="urlEdit"
+              />
+            </div>
+          </a-descriptions-item>
+          <a-descriptions-item label="广告封面" :span="3">
+              <img :src="data[pane.key-1].coverImage" width="200" alt="">
+              <a-upload
+                name="cover"
+                :multiple="false"
+                @change="coverChange"
+                style="margin-left: 30px"
+              >
+                <a-button> <a-icon type="upload" /> 更换封面 </a-button>
+              </a-upload>
           </a-descriptions-item>
         </a-descriptions>
         </div>
@@ -75,16 +101,16 @@
 <script>
 const columns = [
   {
-    title: '地点编号',
+    title: '广告编号',
     dataIndex: 'id',
     scopedSlots: { customRender: 'id' },
   },
   {
-    title: '地点名称',
-    dataIndex: 'name',
+    title: '广告标题',
+    dataIndex: 'title',
   },
   {
-    title: '地点状态',
+    title: '广告状态',
     dataIndex: 'status',
   },
   {
@@ -95,10 +121,10 @@ const columns = [
 ];
 
 export default {
-  name:"place",
+  name:"ads",
   data() {
     const panes = [
-      { title: '地点管理', data:[],  key: '0' ,closable: false },
+      { title: '广告管理', data:[],  key: '0' ,closable: false },
     ];
     return {
       spinning:true,
@@ -116,7 +142,9 @@ export default {
       visible: false,
       confirmLoading: false,
       ModalText: '您的登录信息已过期，请重新登录',
-      descriptionEditable: false,
+      titleEditable: false,
+      contentEditable: false,
+      urlEditable: false,
     };
   },
   computed:{
@@ -129,8 +157,7 @@ export default {
         },
         getCheckboxProps: record => ({
           props: {
-            disabled: record.name === 'Disabled User', // Column configuration not to be checked
-            name: record.name,
+            title: record.id,
           },
         }),
       };
@@ -138,24 +165,23 @@ export default {
   },
   mounted(){
     this.spinning = true;
-    this.getPlaces({"page":"1"});
+    this.getAds({"page":"1"});
   },
   methods: {
-    descriptionCancel() {
-      this.data[this.activeKey-1].description = this.data[this.activeKey-1].preDescription;
-      this.descriptionEditable = false;
+    titleCancel() {
+      this.data[this.activeKey-1].title = this.data[this.activeKey-1].preTitle;
+      this.titleEditable = false;
     },
-    descriptionSave() {
-      // console.log(this.data[this.activeKey-1].description);
+    titleSave() {
       this.$axios({
         method: "put",
-        url: "/api/admin/position/" + this.data[this.activeKey-1].id + "/",
+        url: "/api/admin/ads/" + this.data[this.activeKey-1].id + "/",
         params: {},
         headers: {
           Authorization: localStorage.getItem('Authorization')
         },
         data: {
-          "description": this.data[this.activeKey-1].description
+          "title": this.data[this.activeKey-1].title
         }
       }).then((res) => {
         console.log(res);
@@ -163,19 +189,74 @@ export default {
         if (error.response.status == 403) {
           this.visible = true;
         }
-      })
-      // 将this.data[this.activeKey-1].description上传到后端
-      this.descriptionEditable = false;
+      });
+      this.titleEditable = false;
     },
-    descriptionEdit() {
-      this.data[this.activeKey-1].preDescription = this.data[this.activeKey-1].description;
-      this.descriptionEditable = true;
+    titleEdit() {
+      this.data[this.activeKey-1].preTitle = this.data[this.activeKey-1].title;
+      this.titleEditable = true;
     },
-    getPlaces(p) {
+    contentCancel() {
+      this.data[this.activeKey-1].content = this.data[this.activeKey-1].preContent;
+      this.contentEditable = false;
+    },
+    contentSave() {
+      this.$axios({
+        method: "put",
+        url: "/api/admin/ads/" + this.data[this.activeKey-1].id + "/",
+        params: {},
+        headers: {
+          Authorization: localStorage.getItem('Authorization')
+        },
+        data: {
+          "content": this.data[this.activeKey-1].content
+        }
+      }).then((res) => {
+        console.log(res);
+      }).catch((error) => {
+        if (error.response.status == 403) {
+          this.visible = true;
+        }
+      });
+      this.contentEditable = false;
+    },
+    contentEdit() {
+      this.data[this.activeKey-1].preContent = this.data[this.activeKey-1].content;
+      this.contentEditable = true;
+    },
+    urlCancel() {
+      this.data[this.activeKey-1].url = this.data[this.activeKey-1].preUrl;
+      this.urlEditable = false;
+    },
+    urlSave() {
+      this.$axios({
+        method: "put",
+        url: "/api/admin/ads/" + this.data[this.activeKey-1].id + "/",
+        params: {},
+        headers: {
+          Authorization: localStorage.getItem('Authorization')
+        },
+        data: {
+          "url": this.data[this.activeKey-1].url
+        }
+      }).then((res) => {
+        console.log(res);
+      }).catch((error) => {
+        if (error.response.status == 403) {
+          this.visible = true;
+        }
+      });
+      this.urlEditable = false;
+    },
+    urlEdit() {
+      this.data[this.activeKey-1].preUrl = this.data[this.activeKey-1].url;
+      this.urlEditable = true;
+    },
+    getAds(p) {
       // 如果page超过pages了，捕捉404错误码？
       this.$axios({
         method: "get",
-        url: "api/admin/position/",
+        url: "api/admin/ads/",
         params: p,
         headers: {
           Authorization: localStorage.getItem('Authorization')
@@ -188,8 +269,13 @@ export default {
         this.data.forEach((item)=>{
           item.key = key + '';
           key = key + 1;
-          item.status = item.visibility == false ? '未上架' : '已上架';
-          item.preDescription = item.description;
+          item.status = item.visible == false ? '未上架' : '已上架';
+          item.preTitle = item.title;
+          item.preContent = item.content;
+          item.preUrl = item.url;
+          if (item.cover != null) {
+            item.coverImage = "https://tra-fr-2.zhouyc.cc/api/core/images/" + item.cover.id + "/data/";
+          }
         })
         this.panes[0].data = this.data;
         this.spinning = false;
@@ -199,10 +285,10 @@ export default {
         }
       });
     },
-    deletePlace(placeId) {
+    deleteAd(adId) {
       this.$axios({
         method: "delete",
-        url: "api/admin/position/" + placeId + "/",
+        url: "api/admin/ads/" + adId + "/",
         params: {},
         headers: {
           Authorization: localStorage.getItem('Authorization')
@@ -216,10 +302,10 @@ export default {
         }
       });
     },
-    dealPlace(id, d) {
+    dealAd(id, d) {
       this.$axios({
         method: "put",
-        url: "api/admin/position/" + id + "/",
+        url: "api/admin/ads/" + id + "/",
         params: {},
         headers: {
           Authorization: localStorage.getItem('Authorization')
@@ -233,17 +319,17 @@ export default {
         }
       });
     },
-    passSinglePlace(record) {
-      this.dealPlace(record.id, {"visibility": true});
+    passSingleAd(record) {
+      this.dealAd(record.id, {"visible": true});
       this.remove(record.key);
-      this.getPlaces({"page": "1"});
+      this.getAds({"page": "1"});
       this.selectedRows = [];
       this.selectedRowKeys = [];
     },
-    failSinglePlace(record) {
-      this.dealPlace(record.id, {"visibility": false});
+    failSingleAd(record) {
+      this.dealAd(record.id, {"visible": false});
       this.remove(record.key);
-      this.getPlaces({"page": "1"});
+      this.getAds({"page": "1"});
       this.selectedRows = [];
       this.selectedRowKeys = [];
     },
@@ -266,19 +352,19 @@ export default {
       let params = {"page":"1"};
       this.searchText = value;
       params[this.searchType] = this.searchText;
-      this.getPlaces(params);
+      this.getAds(params);
     },
     onPageChange(page) {
       let params = {"page": page};
       params[this.searchType] = this.searchText;
-      this.getPlaces(params);
+      this.getAds(params);
     },
-    deletePlaces() {
+    deleteAds() {
       this.selectedRows.forEach((item)=>{
-        this.deletePlace(item.id);
+        this.deleteAd(item.id);
         this.remove(item.key);
       });
-      this.getPlaces({"page":"1"});
+      this.getAds({"page":"1"});
       this.selectedRows = [];
       this.selectedRowKeys = [];
     },
@@ -305,7 +391,7 @@ export default {
           }
         }
         if(flag == 0){
-          panes.push({ title: item.name, data:item.data, key: item.key });
+          panes.push({ title: item.id, data:item.data, key: item.key });
          
         }
          this.activeKey = item.key;
@@ -326,7 +412,7 @@ export default {
         }
         console.log("flag:"+flag);
         if(flag == 0){
-          panes.push({ title: item.name, data:item.data, key: item.key });
+          panes.push({ title: item.id, data:item.data, key: item.key });
           i=item.key;
           console.log(i);
           this.activeKey = i;

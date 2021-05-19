@@ -13,20 +13,53 @@ const routes = [
     path: '/about',
     name: 'About',
     component: () => import('../views/About.vue')
-  },{
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('../views/personal/login.vue')
-  },{
+  },
+  {
     path: '/register',
     name: 'register',
     component: () => import('../views/personal/register.vue')
-  },{
+  },
+  {
     path: '/index',
     name: 'index',
     component: () => import('../views/manage/index.vue'),
     redirect:"/underInspect",
-    children:[
+    children: [
+      {
+        path: "/underInspect",
+        name:"underInspect",
+        component: () => import("../views/inspection/underInspect.vue"),
+      },
+      {
+        path: "/passInspect",
+        name:"passInspect",
+        component: () => import("../views/inspection/passInspect.vue"),
+      },
+      {
+        path: "/failInspect",
+        name:"failInspect",
+        component: () => import("../views/inspection/failInspect.vue"),
+      },
+      {
+        path: "/togetherUnderInspect",
+        name:"togetherUnderInspect",
+        component: () => import("../views/togetherInspection/togetherUnderInspect.vue"),
+      },
+      {
+        path: "/togetherPassInspect",
+        name:"togetherPassInspect",
+        component: () => import("../views/togetherInspection/togetherPassInspect.vue"),
+      },
+      {
+        path: "/togetherFailInspect",
+        name:"togetherFailInspect",
+        component: () => import("../views/togetherInspection/togetherFailInspect.vue"),
+      },
       {
         path: "/newMsg",
         name:"newMsg",
@@ -38,33 +71,29 @@ const routes = [
         component: () => import("../views/message/oldMsg.vue"),
       },
       {
-        path: "/failInspect",
-        name:"failInspect",
-        component: () => import("../views/inspection/failInspect.vue"),
-      },{
         path: "/user",
         name:"user",
         component: () => import("../views/manage/user.vue"),
-      }, {
-        path: "/passInspect",
-        name:"passInspect",
-        component: () => import("../views/inspection/passInspect.vue"),
-      }, {
-        path: "/underInspect",
-        name:"underInspect",
-        component: () => import("../views/inspection/underInspect.vue"),
-      },{
+      },
+      {
         path: "/record",
         name:"record",
         component: () => import("../views/manage/record.vue"),
-      },{
+      },
+      {
         path: "/place",
         name:"place",
         component: () => import("../views/manage/place.vue"),
-      },{
+      },
+      {
         path: "/together",
         name:"together",
         component: () => import("../views/manage/together.vue"),
+      },
+      {
+        path: "/ads",
+        name:"ads",
+        component: () => import("../views/manage/ads.vue"),
       },
     ]
   },
@@ -83,7 +112,6 @@ router.beforeEach((to, from, next) => {
     next();
   } else {
     let token = localStorage.getItem('Authorization');
-    // console.log(token);
     if (token === null || token === '') {
       next('/login');
     } else {

@@ -1,15 +1,37 @@
 <template>
-  <div style="text-align:left;margin:10px 0">
+  <div style="text-align: left; margin: 10px 0">
     <a-tabs v-model="activeKey" type="editable-card" @edit="onEdit" hide-add>
       <a-tab-pane v-for="pane in panes" :key="pane.key" :tab="pane.title" :closable="pane.closable">
         <div v-if="pane.key === '0'">
-          <!-- <a-input-search placeholder="input search text" style="width: 300px;margin:0px 10px 15px 0px"  @search="onSearch" />
-          <a-button style="margin:0 5px" type="primary" @click="add">查看</a-button> -->
-          <a-button style="margin:0px 10px 15px 0px" type="primary" @click="add">查看</a-button>
-          <a-button style="margin:0 5px" @click="deleteTogethers">删除</a-button>
+          <!-- <a-select default-value="id" style="width: 100px; margin:0px 10px 15px 0px" @change="handleChange">
+            <a-select-option value="id">
+              同行编号
+            </a-select-option>
+            <a-select-option value="content">
+              同行内容
+            </a-select-option>
+            <a-select-option value="owner">
+              用户编号
+            </a-select-option>
+          </a-select>
+          <a-input-search placeholder="请输入搜索文本" style="width: 300px; margin:0 5px 0 2px"  @search="onSearch" />
+          <a-button style="margin:0 5px 0 50px" type="primary" @click="add">查看</a-button> -->
+          <a-button style="margin: 0px 10px 15px 0px" type="primary" @click="add">查看</a-button>
+          <a-button style="margin: 0 5px" type="primary" @click="passTogethers">通过</a-button>
+          <a-button  style="margin: 0 5px" @click="showModal">不通过</a-button>
+          <a-modal v-model="refuseVisible" title="不通过原因" @ok="refuseHandleOk" @cancel="refuseHandleCancel">
+            <a-textarea v-model="reason" auto-size />
+          </a-modal>
+          <a-modal v-model="refuseSingleVisible" title="不通过原因" @ok="refuseSingleHandleOk" @cancel="refuseSingleHandleCancel">
+            <a-textarea v-model="singleReason" auto-size />
+          </a-modal>
           <a-spin :spinning="spinning">
-            <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data"  :pagination="false">
-              <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text}}</a>
+            <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
+              <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text }} </a>
+              <template slot="action" slot-scope="record" >
+                <a-button style="margin-right:10px" size="small" type="primary" @click="passSingleTogether(record)">通过</a-button>
+                <a-button size="small" @click="showSingleModal(record)">不通过</a-button>
+              </template>
             </a-table>
             <br>
             <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
@@ -53,10 +75,6 @@
             <a-descriptions-item label="活动内容" :span="3">
               {{data[pane.key-1].content}}
             </a-descriptions-item>
-            <a-descriptions-item label="活动参与者" :span="3">
-              <a-table v-if="data[pane.key-1].fellows.length > 0" class="fellowtlb" style="width: 600px" :pagination="false" :columns="fellowColumns" :data-source="data[pane.key-1].fellows" rowKey="id">
-              </a-table>
-            </a-descriptions-item>
           </a-descriptions>
         </div>
     
@@ -69,8 +87,8 @@
         @ok="handleOk"
         @cancel="handleCancel"
       >
-      <p>{{ ModalText }}</p>
-    </a-modal>
+        <p>{{ ModalText }}</p>
+      </a-modal>
   </div>
 </template>
 <script>
@@ -96,68 +114,60 @@ const columns = [
     title: '发布时间',
     dataIndex: 'createTime',
   },
+  {
+    title: '操作',
+    key: 'action',
+    scopedSlots: { customRender: 'action' },
+  },
 ];
-const fellowColumns = [
-  {
-    title: '用户编号',
-    dataIndex: 'id',
-    scopedSlots: { customRender: 'id' },
-  },
-  {
-    title: '用户名称',
-    dataIndex: 'name'
-  },
-  {
-    title: '用户昵称',
-    dataIndex: 'nickname'
-  }
-]
 
 // const data = [
 //   {
 //     key: '1',
-//     name: 'John Brown',
-//     age: 32,
-//     address: 'New York No. 1 Lake Park',
+//     titleName: 'paper 1',
+//     username: "lucy",
+//     reason: 'do not understand what you are doing',
 //   },
 //   {
 //     key: '2',
-//     name: 'Jim Green',
-//     age: 42,
-//     address: 'London No. 1 Lake Park',
-//   },
-//   {
+//     titleName: 'paper 2',
+//     username: "lucy",
+//     reason: 'do not understand what you are doing',
+//   },{
 //     key: '3',
-//     name: 'Joe Black',
-//     age: 32,
-//     address: 'Sidney No. 1 Lake Park',
-//   },
-//   {
+//     titleName: 'paper 3',
+//     username: "lucy",
+//     reason: 'do not understand what you are doing',
+//   },{
 //     key: '4',
-//     name: 'Disabled User',
-//     age: 99,
-//     address: 'Sidney No. 1 Lake Park',
+//     titleName: 'paper 4',
+//     username: "lucy",
+//     reason: 'do not understand what you are doing',
 //   },
 // ];
 
 export default {
-  name:"together",
+  name:"togetherUnderInspect",
   data() {
     const panes = [
-      { title: '同行管理', data:[],  key: '0' ,closable: false },
+      { title: '待审核', data:[],  key: '0' ,closable: false },
     ];
     return {
       spinning:true,
       data:[],
+      searchType: "id",
       columns,
-      fellowColumns,
       activeKey: panes[0].key,
       panes,
       selectedRows:[],
       selectedRowKeys:[],
-      newTabIndex: 0,
       page: 1,
       pageNum: 1,
+      refuseVisible: false,
+      refuseSingleVisible: false,
+      reason: "",
+      singleReason: "",
+      singleRecord: null,
       visible: false,
       confirmLoading: false,
       ModalText: '您的登录信息已过期，请重新登录'
@@ -173,7 +183,6 @@ export default {
         },
         getCheckboxProps: record => ({
           props: {
-            // disabled: record.id === 'Disabled User', // Column configuration not to be checked
             title: record.id,
           },
         }),
@@ -182,9 +191,16 @@ export default {
   },
   mounted(){
     this.spinning = true;
-    this.getTogethers({"page":"1"});
+    this.getTogethers({"page": "1", "forbidden": "2"});
   },
   methods: {
+    showSingleModal(record) {
+      this.singleRecord = record;
+      this.refuseSingleVisible = true;
+    },
+    showModal() {
+      this.refuseVisible = true;
+    },
     getTogethers(p) {
       this.$axios({
         method: "get",
@@ -196,7 +212,6 @@ export default {
         data: {},
       }).then((res) => {
         this.data = res.data.results;
-        this.pageNum = res.data.pages;
         let key = 1;
         this.data.forEach((item)=>{
           item.key = key + '';
@@ -221,15 +236,15 @@ export default {
         }
       });
     },
-    deleteTogether(togetherId) {
+    dealTogether(d) {
       this.$axios({
-        method: "delete",
-        url: "api/admin/companions/" + togetherId + "/",
+        method: "post",
+        url: "api/admin/companions/forbid/",
         params: {},
         headers: {
           Authorization: localStorage.getItem('Authorization')
         },
-        data: {},
+        data: d,
       }).then((res) => {
         console.log(res);
       }).catch((error) => {
@@ -250,17 +265,56 @@ export default {
     handleCancel() {
       this.visible = false;
     },
-    onPageChange(page) {
-      this.getTogethers({"page": page});
+    handleChange(value) {
+      this.searchType = value;
     },
-    deleteTogethers() {
-      this.selectedRows.forEach((item)=>{
-        this.deleteTogether(item.id);
-        this.remove(item.key);
-      });
-      this.getTogethers({"page":"1"});
+    onSearch(value){
+      let params = {"page": "1", "forbidden": "2"};
+      params[this.searchType] = value;
+      this.getTogethers(params);
+    },
+    onPageChange(page) {
+      this.getTogethers({"page": page, "forbidden": "2"});
+    },
+    passSingleTogether(record) {
+      this.dealTogether({"id": record.id, "status": "0"});
+      this.remove(record.key);
+      this.getTogethers({"page": "1", "forbidden": "2"});
       this.selectedRows = [];
       this.selectedRowKeys = [];
+    },
+    passTogethers() {
+      this.selectedRows.forEach((item)=>{
+        this.dealTogether({"id": item.id, "status": "0"});
+        this.remove(item.key);
+      });
+      this.getTogethers({"page":"1", "forbidden": "2"});
+      this.selectedRows = [];
+      this.selectedRowKeys = [];
+    },
+    refuseSingleHandleOk() {
+      this.dealTogether({"id": this.singleRecord.id, "status": "1", "reason": this.singleReason});
+      this.remove(this.singleRecord.key);
+      this.getTogethers({"page":"1", "forbidden": "2"});
+      this.selectedRows = [];
+      this.selectedRowKeys = [];
+      this.refuseSingleVisible = false;
+    },
+    refuseHandleOk() {
+      this.selectedRows.forEach((item)=>{
+        this.dealTogether({"id": item.id, "status": "1", "reason": this.reason});
+        this.remove(item.key);
+      });
+      this.getTogethers({"page":"1", "forbidden": "2"});
+      this.selectedRows = [];
+      this.selectedRowKeys = [];
+      this.refuseVisible = false;
+    },
+    refuseSingleHandleCancel() {
+      this.refuseSingleVisible = false;
+    },
+    refuseHandleCancel() {
+      this.refuseVisible = false;
     },
     callback(key) {
       console.log(key);
@@ -272,11 +326,9 @@ export default {
       console.log(this.panes);
     },
     addSingle(record){
-      console.log(record);
       const panes = this.panes;
         let flag = 0;
         let item = record;
-        console.log(item);
         for(let j = 0; j<panes.length;j++){
           if(panes[j].key == item.key){
             console.log("item.key:"+item.key);
@@ -286,10 +338,9 @@ export default {
         }
         if(flag == 0){
           panes.push({ title: item.id, data:item.data, key: item.key });
-         
         }
-         this.activeKey = item.key;
-         this.panes = panes;
+        this.activeKey = item.key;
+        this.panes = panes;
     },
     add() {
       const panes = this.panes;
@@ -336,9 +387,3 @@ export default {
   },
 };
 </script>
-
-<style>
-.fellowtlb .ant-table-thead > tr > th {
-  background: transparent;
-}
-</style>

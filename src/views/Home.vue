@@ -28,13 +28,12 @@
           name:"register"
         });
       },
-
     },
-
   }
 </script>
+
 <style scoped>
-.title{
+.title {
   padding-top: 150px;
   margin:auto;
   width:500px;
@@ -43,25 +42,23 @@
   color: white;
   /* border: solid red 1px; */
 }
-.main{
+.main {
   width:100%;
   height:700px;
-  /* background-color: antiquewhite; */
   background-color: transparent;
 }
-.btn{
+.btn {
   font-size:18px;
   height:50px;
   width:100px;
   margin:50px 30px;
 }
-.btns{
+.btns {
   margin:auto;
   width:500px;
   height:100px;
   /* border: solid red 1px; */
 }
-
 .bg-blur {
   background: url('../assets/home_background.png');
   height: 100%;

@@ -1,22 +1,35 @@
 <template>
-  <div style="text-align:left;margin:10px 0">
-    <a-tabs v-model="activeKey" type="editable-card" @edit="onEdit" hide-add>
-      <a-tab-pane v-for="pane in panes" :key="pane.key" :tab="pane.title" :closable="pane.closable">
-        <div v-if="pane.key === '0'">
-          <!-- <a-input-search placeholder="input search text" style="width: 300px;margin:0px 10px 15px 0px"  @search="onSearch" />
-          <a-button style="margin:0 5px" type="primary" @click="add">查看</a-button> -->
-          <a-button style="margin:0px 10px 15px 0px" type="primary" @click="add">查看</a-button>
-          <a-button style="margin:0 5px" @click="deleteTogethers">删除</a-button>
-          <a-spin :spinning="spinning">
-            <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data"  :pagination="false">
-              <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text}}</a>
-            </a-table>
-            <br>
-            <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
-          </a-spin>
-        </div>
-        <div v-else style="margin:10px 0 10px 15px;">
-          <a-descriptions title="同行活动信息" bordered style="word-break: break-all;word-wrap: break-word;">
+<div style="text-align:left;margin:10px 0">
+  <a-tabs v-model="activeKey" type="editable-card" @edit="onEdit" hide-add>
+    <a-tab-pane v-for="pane in panes" :key="pane.key" :tab="pane.title" :closable="pane.closable">
+      <div v-if="pane.key === '0'">
+        <!-- <a-select default-value="id" style="width: 100px; margin:0px 10px 15px 0px" @change="handleChange">
+          <a-select-option value="id">
+            游记编号
+          </a-select-option>
+          <a-select-option value="content">
+            游记内容
+          </a-select-option>
+          <a-select-option value="position">
+            游记地点
+          </a-select-option>
+          <a-select-option value="owner">
+            用户编号
+          </a-select-option>
+        </a-select>
+        <a-input-search placeholder="请输入搜索文本" style="width: 300px; margin:0 5px 0 2px"  @search="onSearch" />
+        <a-button style="margin:0 5px 0 50px" type="primary" @click="add">查看</a-button> -->
+        <a-button style="margin:0px 10px 15px 0px" type="primary" @click="add">查看</a-button>
+        <a-spin :spinning="spinning">
+          <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
+            <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text }} </a>
+          </a-table>
+          <br>
+          <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
+        </a-spin>
+      </div>
+      <div v-else style="margin:10px 0 10px 15px;">
+        <a-descriptions title="同行活动信息" bordered style="word-break: break-all;word-wrap: break-word;">
             <a-descriptions-item label="编号">
               {{data[pane.key-1].id}}
             </a-descriptions-item>
@@ -53,22 +66,18 @@
             <a-descriptions-item label="活动内容" :span="3">
               {{data[pane.key-1].content}}
             </a-descriptions-item>
-            <a-descriptions-item label="活动参与者" :span="3">
-              <a-table v-if="data[pane.key-1].fellows.length > 0" class="fellowtlb" style="width: 600px" :pagination="false" :columns="fellowColumns" :data-source="data[pane.key-1].fellows" rowKey="id">
-              </a-table>
-            </a-descriptions-item>
           </a-descriptions>
-        </div>
-    
-      </a-tab-pane>
-    </a-tabs>
-    <a-modal
-        title="提示"
-        :visible="visible"
-        :confirm-loading="confirmLoading"
-        @ok="handleOk"
-        @cancel="handleCancel"
-      >
+      </div>
+   
+    </a-tab-pane>
+  </a-tabs>
+  <a-modal
+      title="提示"
+      :visible="visible"
+      :confirm-loading="confirmLoading"
+      @ok="handleOk"
+      @cancel="handleCancel"
+    >
       <p>{{ ModalText }}</p>
     </a-modal>
   </div>
@@ -97,65 +106,22 @@ const columns = [
     dataIndex: 'createTime',
   },
 ];
-const fellowColumns = [
-  {
-    title: '用户编号',
-    dataIndex: 'id',
-    scopedSlots: { customRender: 'id' },
-  },
-  {
-    title: '用户名称',
-    dataIndex: 'name'
-  },
-  {
-    title: '用户昵称',
-    dataIndex: 'nickname'
-  }
-]
-
-// const data = [
-//   {
-//     key: '1',
-//     name: 'John Brown',
-//     age: 32,
-//     address: 'New York No. 1 Lake Park',
-//   },
-//   {
-//     key: '2',
-//     name: 'Jim Green',
-//     age: 42,
-//     address: 'London No. 1 Lake Park',
-//   },
-//   {
-//     key: '3',
-//     name: 'Joe Black',
-//     age: 32,
-//     address: 'Sidney No. 1 Lake Park',
-//   },
-//   {
-//     key: '4',
-//     name: 'Disabled User',
-//     age: 99,
-//     address: 'Sidney No. 1 Lake Park',
-//   },
-// ];
 
 export default {
-  name:"together",
+  name:"togetherFailInspect",
   data() {
     const panes = [
-      { title: '同行管理', data:[],  key: '0' ,closable: false },
+      { title: '审核不通过', data:[],  key: '0' ,closable: false },
     ];
     return {
       spinning:true,
       data:[],
+      searchType: "id",
       columns,
-      fellowColumns,
       activeKey: panes[0].key,
       panes,
       selectedRows:[],
       selectedRowKeys:[],
-      newTabIndex: 0,
       page: 1,
       pageNum: 1,
       visible: false,
@@ -173,7 +139,6 @@ export default {
         },
         getCheckboxProps: record => ({
           props: {
-            // disabled: record.id === 'Disabled User', // Column configuration not to be checked
             title: record.id,
           },
         }),
@@ -182,7 +147,7 @@ export default {
   },
   mounted(){
     this.spinning = true;
-    this.getTogethers({"page":"1"});
+    this.getTogethers({"page": "1", "forbidden": "1"});
   },
   methods: {
     getTogethers(p) {
@@ -221,23 +186,6 @@ export default {
         }
       });
     },
-    deleteTogether(togetherId) {
-      this.$axios({
-        method: "delete",
-        url: "api/admin/companions/" + togetherId + "/",
-        params: {},
-        headers: {
-          Authorization: localStorage.getItem('Authorization')
-        },
-        data: {},
-      }).then((res) => {
-        console.log(res);
-      }).catch((error) => {
-        if (error.response.status == 403) {
-          this.visible = true;
-        }
-      });
-    },
     handleOk() {
       this.ModalText = '该对话框将在2秒后关闭';
       this.confirmLoading = true;
@@ -250,17 +198,22 @@ export default {
     handleCancel() {
       this.visible = false;
     },
-    onPageChange(page) {
-      this.getTogethers({"page": page});
+    handleChange(value) {
+      this.searchType = value;
     },
-    deleteTogethers() {
-      this.selectedRows.forEach((item)=>{
-        this.deleteTogether(item.id);
-        this.remove(item.key);
-      });
-      this.getTogethers({"page":"1"});
-      this.selectedRows = [];
-      this.selectedRowKeys = [];
+    onSearch(value){
+      let params = {"page": "1", "forbidden": "1"};
+      params[this.searchType] = value;
+      this.getTogethers(params);
+    },
+    onPageChange(page) {
+      this.getTogethers({"page": page, "forbidden": "1"});
+    },
+    fail(){
+      console.log("fail")
+    },
+    pass(){
+      console.log("pass")
     },
     callback(key) {
       console.log(key);
@@ -272,11 +225,9 @@ export default {
       console.log(this.panes);
     },
     addSingle(record){
-      console.log(record);
       const panes = this.panes;
         let flag = 0;
         let item = record;
-        console.log(item);
         for(let j = 0; j<panes.length;j++){
           if(panes[j].key == item.key){
             console.log("item.key:"+item.key);
@@ -336,9 +287,3 @@ export default {
   },
 };
 </script>
-
-<style>
-.fellowtlb .ant-table-thead > tr > th {
-  background: transparent;
-}
-</style>

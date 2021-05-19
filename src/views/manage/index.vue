@@ -48,6 +48,21 @@
               <router-link to="/failInspect"></router-link>
             </a-menu-item>
           </a-sub-menu>
+          <a-sub-menu key="sub4">
+            <span slot="title"><a-icon type="laptop" />同行审核</span>
+            <a-menu-item key="15">
+              待审核
+              <router-link to="/togetherUnderInspect"></router-link>
+            </a-menu-item>
+            <a-menu-item key="16">
+              审核通过
+              <router-link to="/togetherPassInspect"></router-link>
+            </a-menu-item>
+            <a-menu-item key="17">
+              审核不通过
+              <router-link to="/togetherFailInspect"></router-link>
+            </a-menu-item>
+          </a-sub-menu>
           <a-sub-menu key="sub3">
             <span slot="title"><a-icon type="notification" />信息推送</span>
             <a-menu-item key="9">
@@ -75,6 +90,10 @@
             <a-icon type="team" />同行管理
             <router-link to="/together"></router-link>
           </a-menu-item>
+          <a-menu-item key="18">
+            <a-icon type="picture" />广告管理
+            <router-link to="/ads"></router-link>
+          </a-menu-item>
         </a-menu>
       </a-layout-sider>
       <a-layout style="padding: 0 24px 24px;min-height:600px">
@@ -87,28 +106,25 @@
 export default {
   data() {
     return {
-      username:"",
-      // userid:100,
+      username: "",
       collapsed: false,
     };
   },
   created() {
-    // this.username = this.$route.params.username;
   },
   mounted() {
     this.username = localStorage.getItem('Username');
   },
   methods:{
     onClick({key}){
-      if(key == 1){
+      if (key == 1) {
         console.log(key);
-      }else if(key == 2){
+      } else if (key == 2){
         localStorage.removeItem('Authorization');
         localStorage.removeItem('Username');
         this.$router.push("/");
       }
       // console.log(`Click on item ${key}`);
-
     }
   }
 };
@@ -128,7 +144,7 @@ export default {
 }
 .avatar{
   float: left;
- display:inline-block;
+  display:inline-block;
   /* border: red solid 1px; */
   width:50px
 }
