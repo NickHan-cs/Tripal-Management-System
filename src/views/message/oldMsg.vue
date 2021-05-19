@@ -3,78 +3,41 @@
     <a-tabs v-model="activeKey" type="editable-card" @edit="onEdit" hide-add>
       <a-tab-pane v-for="pane in panes" :key="pane.key" :tab="pane.title" :closable="pane.closable">
         <div v-if="pane.key === '0'">
-          <a-select default-value="id" style="width: 100px; margin:0px 10px 15px 0px" @change="handleChange">
-            <a-select-option value="id">
-              游记编号
-            </a-select-option>
-            <a-select-option value="content">
-              游记内容
-            </a-select-option>
-            <a-select-option value="position">
-              游记地点
-            </a-select-option>
-            <a-select-option value="owner">
-              用户编号
-            </a-select-option>
-          </a-select>
-          <a-input-search placeholder="请输入搜索文本" style="width: 300px; margin:0 5px 0 2px"  @search="onSearch" />
-          <a-button style="margin:0 5px 0 50px" type="primary" @click="add">查看</a-button>
+          <!-- <a-input-search placeholder="input search text" style="width: 300px;margin:0px 10px 15px 0px"  @search="onSearch" />
+          <a-button style="margin:0 5px" type="primary" @click="add">查看</a-button> -->
+          <a-button style="margin:0px 10px 15px 0px" type="primary" @click="add">查看</a-button>
+          <!-- <a-button style="margin:0 5px" @click="deleteMsgs">删除</a-button> -->
           <a-spin :spinning="spinning">
-            <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data">
-              <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text }} </a>
+            <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data"  :pagination="false">
+              <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text}}</a>
             </a-table>
             <br>
             <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
           </a-spin>
         </div>
         <div v-else style="margin:10px 0 10px 15px;">
-          <a-descriptions title="游记信息" bordered style="word-break: break-all;word-wrap: break-word;">
-            <a-descriptions-item label="游记标题" :span="3">
-              {{data[pane.key-1].title}}
-            </a-descriptions-item>
-            <a-descriptions-item label="游记编号">
+          <a-descriptions title="系统信息" bordered style="word-break: break-all;word-wrap: break-word;">
+            <a-descriptions-item label="信息编号" :span="1">
               {{data[pane.key-1].id}}
             </a-descriptions-item>
-            <a-descriptions-item label="游记地点">
-              {{data[pane.key-1].positionName}}
-            </a-descriptions-item>
-            <a-descriptions-item label="发布时间">
+            <a-descriptions-item label="发送时间" :span="2">
               {{data[pane.key-1].createTime}}
             </a-descriptions-item>
-            <a-descriptions-item label="用户编号">
-              {{data[pane.key-1].owner.id}}
-            </a-descriptions-item>
-            <a-descriptions-item label="用户名称">
-              {{data[pane.key-1].owner.name}}
-            </a-descriptions-item>
-            <a-descriptions-item label="用户昵称">
-              {{data[pane.key-1].owner.nickname}}
-            </a-descriptions-item>
-            <a-descriptions-item label="游记内容" :span="3">
+            <a-descriptions-item label="信息内容" :span="3">
               {{data[pane.key-1].content}}
-            </a-descriptions-item>
-            <a-descriptions-item label="游记封面" :span="3">
-              <img :src="data[pane.key-1].coverImage" width="500" alt="">
-            </a-descriptions-item>
-            <a-descriptions-item label="游记图片" :span="3">
-              <div v-for="item in data[pane.key-1].recordImages" :key="item">
-                <img :src="item" width="500" alt="">
-              </div>
-            </a-descriptions-item>
-            <a-descriptions-item label="审核不通过原因" :span="3">
-              {{data[pane.key-1].forbidden_reason}}
             </a-descriptions-item>
           </a-descriptions>
         </div>
+    
       </a-tab-pane>
     </a-tabs>
     <a-modal
-      title="提示"
-      :visible="visible"
-      :confirm-loading="confirmLoading"
-      @ok="handleOk"
-      @cancel="handleCancel"
-    >
+        title="提示"
+        :visible="visible"
+        :confirm-loading="confirmLoading"
+        @ok="handleOk"
+        @cancel="handleCancel"
+      >
       <p>{{ ModalText }}</p>
     </a-modal>
   </div>
@@ -82,76 +45,66 @@
 <script>
 const columns = [
   {
-    title: '游记编号',
+    title: '信息编号',
     dataIndex: 'id',
     scopedSlots: { customRender: 'id' },
+    width: '80px',
   },
   {
-    title: '游记标题',
-    dataIndex: 'title',
-  },
-  {
-    title: '用户编号',
-    dataIndex: 'ownerId',
-  },
-  {
-    title: '用户名称',
-    dataIndex: 'ownerName',
-  },
-  {
-    title: '游记地点',
-    dataIndex: 'positionName',
-  },
-  {
-    title: '发布时间',
+    title: '发送时间',
     dataIndex: 'createTime',
+    width: '160px',
   },
   {
-    title: '不通过原因',
-    dataIndex: 'forbidden_reason',
-  },
+    title: '信息内容',
+    dataIndex: 'content',
+    width: '300px',
+    ellipsis: true,
+  }
 ];
 
 // const data = [
 //   {
 //     key: '1',
-//     titleName: 'paper 1',
-//     username: "lucy",
-//     reason: 'do not understand what you are doing',
+//     name: 'John Brown',
+//     age: 32,
+//     address: 'New York No. 1 Lake Park',
 //   },
 //   {
 //     key: '2',
-//     titleName: 'paper 2',
-//     username: "lucy",
-//     reason: 'do not understand what you are doing',
-//   },{
+//     name: 'Jim Green',
+//     age: 42,
+//     address: 'London No. 1 Lake Park',
+//   },
+//   {
 //     key: '3',
-//     titleName: 'paper 3',
-//     username: "lucy",
-//     reason: 'do not understand what you are doing',
-//   },{
+//     name: 'Joe Black',
+//     age: 32,
+//     address: 'Sidney No. 1 Lake Park',
+//   },
+//   {
 //     key: '4',
-//     titleName: 'paper 4',
-//     username: "lucy",
-//     reason: 'do not understand what you are doing',
+//     name: 'Disabled User',
+//     age: 99,
+//     address: 'Sidney No. 1 Lake Park',
 //   },
 // ];
 
 export default {
-  name:"user",
+  name:"oldMsg",
   data() {
     const panes = [
-      { title: '审核不通过', data:[],  key: '0' ,closable: false },
+      { title: '信息管理', data:[],  key: '0' ,closable: false },
     ];
     return {
       spinning:true,
       data:[],
-      searchType: "id",
       columns,
       activeKey: panes[0].key,
       panes,
       selectedRows:[],
       selectedRowKeys:[],
+      newTabIndex: 0,
       page: 1,
       pageNum: 1,
       visible: false,
@@ -169,6 +122,7 @@ export default {
         },
         getCheckboxProps: record => ({
           props: {
+            disabled: record.id === 'Disabled User', // Column configuration not to be checked
             title: record.id,
           },
         }),
@@ -177,13 +131,13 @@ export default {
   },
   mounted(){
     this.spinning = true;
-    this.getRecords({"page": "1", "forbidden": "1"});
+    this.getMsgs({"page":"1", "type": "0"});
   },
   methods: {
-    getRecords(p) {
+    getMsgs(p) {
       this.$axios({
         method: "get",
-        url: "api/admin/travels/",
+        url: "api/admin/messages/",
         params: p,
         headers: {
           Authorization: localStorage.getItem('Authorization')
@@ -196,27 +150,36 @@ export default {
         this.data.forEach((item)=>{
           item.key = key + '';
           key = key + 1;  
-          item.ownerId = item.owner.id;
-          item.ownerName = item.owner.name;
-          item.positionName = item.position.name;
           let time_array = item.time.split("T");
           item.createTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
-          if (item.cover != null) {
-            item.coverImage = "https://tra-fr-2.zhouyc.cc/api/core/images/" + item.cover + "/data/";
-          }
-          item.recordImages = []
-          item.images.forEach((image) => {
-            item.recordImages.push("https://tra-fr-2.zhouyc.cc/api/core/images/" + image + "/data/");
-          })
         })
         this.panes[0].data = this.data;
         this.spinning = false;
       }).catch((error) => {
+        console.log(error);
         if (error.response.status == 403) {
+          console.log(localStorage.getItem('Authorization'))
           this.visible = true;
         }
       });
     },
+    // deleteMsgs(msgId) {
+    //   this.$axios({
+    //     method: "delete",
+    //     url: "api/admin/messages/" + msgId + "/",
+    //     params: {},
+    //     headers: {
+    //       Authorization: localStorage.getItem('Authorization')
+    //     },
+    //     data: {},
+    //   }).then((res) => {
+    //     console.log(res);
+    //   }).catch((error) => {
+    //     if (error.response.status == 403) {
+    //       this.visible = true;
+    //     }
+    //   });
+    // },
     handleOk() {
       this.ModalText = '该对话框将在2秒后关闭';
       this.confirmLoading = true;
@@ -229,23 +192,24 @@ export default {
     handleCancel() {
       this.visible = false;
     },
-    handleChange(value) {
-      this.searchType = value;
-    },
-    onSearch(value){
-      let params = {"page": "1", "forbidden": "1"};
-      params[this.searchType] = value;
-      this.getRecords(params);
-    },
+    // handleChange(value) {
+    //   this.searchType = value;
+    // },
+    // onSearch(value){
+    //   console.log(value);
+    // },
     onPageChange(page) {
-      this.getRecords({"page": page, "forbidden": "1"});
+      this.getMsgs({"page": page, "type": 0});
     },
-    fail(){
-      console.log("fail")
-    },
-    pass(){
-      console.log("pass")
-    },
+    // deleteMsgs() {
+    //   this.selectedRows.forEach((item)=>{
+    //     this.deleteMsgs(item.id);
+    //     this.remove(item.key);
+    //   });
+    //   this.getMsgs({"page":"1"});
+    //   this.selectedRows = [];
+    //   this.selectedRowKeys = [];
+    // },
     callback(key) {
       console.log(key);
     },
@@ -256,9 +220,11 @@ export default {
       console.log(this.panes);
     },
     addSingle(record){
+      console.log(record);
       const panes = this.panes;
         let flag = 0;
         let item = record;
+        console.log(item);
         for(let j = 0; j<panes.length;j++){
           if(panes[j].key == item.key){
             console.log("item.key:"+item.key);
@@ -268,7 +234,6 @@ export default {
         }
         if(flag == 0){
           panes.push({ title: item.id, data:item.data, key: item.key });
-         
         }
          this.activeKey = item.key;
          this.panes = panes;
@@ -288,7 +253,7 @@ export default {
         }
         console.log("flag:"+flag);
         if(flag == 0){
-          panes.push({ title: item.titleName, data:item.data, key: item.key });
+          panes.push({ title: item.id, data:item.data, key: item.key });
           i=item.key;
           console.log(i);
           this.activeKey = i;

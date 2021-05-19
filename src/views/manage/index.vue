@@ -17,8 +17,8 @@
         
       </div>
       <div class="info">
-        <p style="color:white;">用户名：{{username}}</p >
-        <p style="color:white;margin-top:-55px">管理员编号：{{userid}}</p>
+        <p style="color:white;">管理员：{{username}}</p >
+        <!-- <p style="color:white;margin-top:-55px">管理员编号：{{userid}}</p> -->
         </div>
       <div class="logo">游迹后台管理系统</div>
     </a-layout-header>
@@ -26,13 +26,13 @@
       <a-layout-sider width="200" style="background: #fff">
         <a-menu
           mode="inline"
-          :default-selected-keys="['1']"
+          :default-selected-keys="['5']"
           :default-open-keys="['sub2']"
           :style="{ height: '100%', borderRight: 0 }"
         >
-          <a-menu-item key="1">
+          <!-- <a-menu-item key="1">
               首页
-            </a-menu-item>
+            </a-menu-item> -->
           <a-sub-menu key="sub2">
             <span slot="title"><a-icon type="laptop" />游记审核</span>
             <a-menu-item key="5">
@@ -46,6 +46,24 @@
             <a-menu-item key="7">
               审核不通过
               <router-link to="/failInspect"></router-link>
+<<<<<<< HEAD
+=======
+            </a-menu-item>
+          </a-sub-menu>
+          <a-sub-menu key="sub4">
+            <span slot="title"><a-icon type="laptop" />同行审核</span>
+            <a-menu-item key="15">
+              待审核
+              <router-link to="/togetherUnderInspect"></router-link>
+            </a-menu-item>
+            <a-menu-item key="16">
+              审核通过
+              <router-link to="/togetherPassInspect"></router-link>
+            </a-menu-item>
+            <a-menu-item key="17">
+              审核不通过
+              <router-link to="/togetherFailInspect"></router-link>
+>>>>>>> master
             </a-menu-item>
           </a-sub-menu>
           <a-sub-menu key="sub3">
@@ -56,6 +74,10 @@
             </a-menu-item>
             <a-menu-item key="10">
               已推送
+<<<<<<< HEAD
+=======
+              <router-link to="/oldMsg"></router-link>
+>>>>>>> master
             </a-menu-item>
           </a-sub-menu>
           <a-menu-item key="11">
@@ -74,6 +96,13 @@
             <a-icon type="team" />同行管理
             <router-link to="/together"></router-link>
           </a-menu-item>
+<<<<<<< HEAD
+=======
+          <a-menu-item key="18">
+            <a-icon type="picture" />广告管理
+            <router-link to="/ads"></router-link>
+          </a-menu-item>
+>>>>>>> master
         </a-menu>
       </a-layout-sider>
       <a-layout style="padding: 0 24px 24px;min-height:600px">
@@ -86,11 +115,11 @@
 export default {
   data() {
     return {
-      username:"Mary",
-      userid:100,
+      username: "",
       collapsed: false,
     };
   },
+<<<<<<< HEAD
   methods:{
     onClick({key}){
       if(key == 1){
@@ -100,6 +129,23 @@ export default {
       }
       console.log(`Click on item ${key}`);
 
+=======
+  created() {
+  },
+  mounted() {
+    this.username = localStorage.getItem('Username');
+  },
+  methods:{
+    onClick({key}){
+      if (key == 1) {
+        console.log(key);
+      } else if (key == 2){
+        localStorage.removeItem('Authorization');
+        localStorage.removeItem('Username');
+        this.$router.push("/");
+      }
+      // console.log(`Click on item ${key}`);
+>>>>>>> master
     }
   }
 };
@@ -119,17 +165,17 @@ export default {
 }
 .avatar{
   float: left;
- display:inline-block;
+  display:inline-block;
   /* border: red solid 1px; */
   width:50px
 }
 .info{
-  font-size:12px;
+  font-size:16px;
   width:300px;
   height:60px;
   float: left;
   text-align:left;
-  margin-top:-10px;
+  margin-top:0px;
   margin: left 20px;
 }
 </style>

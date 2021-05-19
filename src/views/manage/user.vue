@@ -1,79 +1,130 @@
 <template>
-<div style="text-align:left;margin:10px 0">
-  <a-tabs v-model="activeKey" type="editable-card" @edit="onEdit" hide-add>
-    <a-tab-pane v-for="pane in panes" :key="pane.key" :tab="pane.title" :closable="pane.closable">
-      <div v-if="pane.key === '0'">
-          <a-input-search placeholder="input search text" style="width: 300px;margin:0px 10px 15px 0px"  @search="onSearch" />
-          <a-button style="margin:0 5px" type="primary" @click="add">查看</a-button>
-          <a-button  style="margin:0 5px" @click="remove">删除</a-button>
-          <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data">
-            <a slot="name" slot-scope="text, record" @click="addSingle(record)">{{ text}}</a>
-          </a-table>
-      </div>
-      <div v-else style="margin:10px 0 10px 15px;">
-        <a-descriptions title="User Info">
-        <a-descriptions-item label="UserName">
-          {{data[pane.key-1].name}}
-        </a-descriptions-item>
-        <a-descriptions-item label="Age">
-          {{data[pane.key-1].age}}
-        </a-descriptions-item>
-        <a-descriptions-item label="Remark">
-          empty
-        </a-descriptions-item>
-        <a-descriptions-item label="Address">
-         {{data[pane.key-1].address}}
-        </a-descriptions-item>
-      </a-descriptions>
-      </div>
-   
-    </a-tab-pane>
-  </a-tabs>
+  <div style="text-align:left;margin:10px 0">
+    <a-tabs v-model="activeKey" type="editable-card" @edit="onEdit" hide-add>
+      <a-tab-pane v-for="pane in panes" :key="pane.key" :tab="pane.title" :closable="pane.closable">
+        <div v-if="pane.key === '0'">
+          <a-select default-value="id" style="width: 100px; margin:0px 10px 15px 0px" @change="handleChange">
+            <a-select-option value="id">
+              用户编号
+            </a-select-option>
+            <a-select-option value="name">
+              用户名称
+            </a-select-option>
+            <a-select-option value="nickname">
+              用户昵称
+            </a-select-option>
+          </a-select>
+          <a-input-search placeholder="请输入搜索文本" style="width: 300px; margin:0 5px 0 2px"  @search="onSearch" />
+          <a-button style="margin:0 5px 0 50px" type="primary" @click="add">查看</a-button>
+          <a-button  style="margin:0 5px" @click="deleteUsers">删除</a-button>
+          <a-spin :spinning="spinning">
+            <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
+              <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{text}}</a>
+            </a-table>
+            <br>
+            <a-pagination show-quick-jumper :page-size="1" :total="pageNum" @change="onPageChange" />
+          </a-spin>
+        </div>
+        <div v-else style="margin:10px 0 10px 15px;">
+          <a-descriptions title="用户信息" bordered>
+            <a-descriptions-item label="编号">
+              {{data[pane.key-1].id}}
+            </a-descriptions-item>
+            <a-descriptions-item label="名称">
+              {{data[pane.key-1].name}}
+            </a-descriptions-item>
+            <a-descriptions-item label="昵称">
+              {{data[pane.key-1].nickname}}
+            </a-descriptions-item>
+            <a-descriptions-item label="性别">
+              {{data[pane.key-1].gender}}
+            </a-descriptions-item>
+            <a-descriptions-item label="生日">
+              {{data[pane.key-1].birthday}}
+            </a-descriptions-item>
+            <a-descriptions-item label="常用地理位置">
+              {{data[pane.key-1].positionName}}
+            </a-descriptions-item>
+            <a-descriptions-item label="联系方式">
+              {{data[pane.key-1].phone}}
+            </a-descriptions-item>
+            <a-descriptions-item label="邮箱">
+              {{data[pane.key-1].email}}
+            </a-descriptions-item>
+            <a-descriptions-item label="创建时间">
+              {{data[pane.key-1].createTime}}
+            </a-descriptions-item>
+            <a-descriptions-item label="个性签名" :span="3">
+              {{data[pane.key-1].sign}}
+            </a-descriptions-item>
+            <a-descriptions-item label="去过的城市数量" :span="1.5">
+              {{data[pane.key-1].cities}}
+            </a-descriptions-item>
+            <a-descriptions-item label="发表的游记数量" :span="1.5">
+              {{data[pane.key-1].travels}}
+            </a-descriptions-item>
+            <a-descriptions-item label="关注数">
+              {{data[pane.key-1].subscription.length}}
+            </a-descriptions-item>
+            <a-descriptions-item label="粉丝数">
+              {{data[pane.key-1].subscribers}}
+            </a-descriptions-item>
+            <a-descriptions-item label="点赞数">
+              {{data[pane.key-1].likes}}
+            </a-descriptions-item>
+            <a-descriptions-item label="用户头像" :span="3">
+              <img :src="data[pane.key-1].iconImage" width="500">
+            </a-descriptions-item>
+          </a-descriptions>
+        </div>
+      </a-tab-pane>
+    </a-tabs>
+    <a-modal
+        title="提示"
+        :visible="visible"
+        :confirm-loading="confirmLoading"
+        @ok="handleOk"
+        @cancel="handleCancel"
+      >
+      <p>{{ ModalText }}</p>
+    </a-modal>
   </div>
 </template>
 <script>
 const columns = [
   {
-    title: 'Name',
+    title: '用户编号',
+    dataIndex: 'id',
+    scopedSlots: { customRender: 'id' },
+  },
+  {
+    title: '用户名称',
     dataIndex: 'name',
-    scopedSlots: { customRender: 'name' },
   },
   {
-    title: 'Age',
-    dataIndex: 'age',
+    title: '用户昵称',
+    dataIndex: 'nickname'
   },
   {
-    title: 'Address',
-    dataIndex: 'address',
+    title: '创建时间',
+    dataIndex: 'createTime',
   },
 ];
 
-const data = [
-  {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sidney No. 1 Lake Park',
-  },
-  {
-    key: '4',
-    name: 'Disabled User',
-    age: 99,
-    address: 'Sidney No. 1 Lake Park',
-  },
-];
+// const data = [
+//   {
+//     key: '1',
+//     id: '18375362',
+//     name: '韩程凯',
+//     nickname: 'NickHan',
+//   },
+//   {
+//     key: '2',
+//     id: '18375363',
+//     name: '韩程凯',
+//     nickname: '2021-4-22',
+//   },
+// ];
 
 export default {
   name:"user",
@@ -82,13 +133,20 @@ export default {
       { title: '用户管理', data:[],  key: '0' ,closable: false },
     ];
     return {
-      data,
+      spinning: true,
+      data:[],
+      searchType:"id",
       columns,
       activeKey: panes[0].key,
       panes,
       selectedRows:[],
       selectedRowKeys:[],
       newTabIndex: 0,
+      page: 1,
+      pageNum: 1,
+      visible: false,
+      confirmLoading: false,
+      ModalText: '您的登录信息已过期，请重新登录'
     };
   },
   computed:{
@@ -102,18 +160,98 @@ export default {
         getCheckboxProps: record => ({
           props: {
             disabled: record.name === 'Disabled User', // Column configuration not to be checked
-            name: record.name,
+            title: record.id,
           },
         }),
       };
     },
   },
   mounted(){
-    this.panes[0].data = this.data;
+    this.spinning = true;
+    this.getUsers({"page":"1"});  
   },
   methods: {
+    // getImages(imageIds) {
+
+    // },
+    getUsers(p) {
+      this.$axios({
+        method: "get",
+        url: "api/admin/users/",
+        params: p,
+        headers: {
+          Authorization: localStorage.getItem('Authorization')
+        },
+        data: {},
+      }).then((res) => {
+        this.data = res.data.results;
+        this.pageNum = res.data.pages;
+        let key = 1;
+        this.data.forEach((item)=>{
+          item.key = key + '';
+          key = key + 1;
+          let time_array = item.time.split("T")
+          item.createTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
+          item.positionName = item.position == null ? null : item.position.name;
+          item.gender = item.gender == '0' ? '男' : '女';
+          item.iconImage = "https://tra-fr-2.zhouyc.cc/api/core/images/" + item.icon + "/data/";
+        })
+        this.panes[0].data = this.data;
+        this.spinning = false;
+      }).catch((error) => {
+        if (error.response.status == 403) {
+          this.visible = true;
+        }
+      });
+    },
+    deleteUser(userId) {
+      this.$axios({
+        method: "delete",
+        url: "api/admin/users/" + userId + "/",
+        params: {},
+        headers: {
+          Authorization: localStorage.getItem('Authorization')
+        },
+        data: {},
+      }).then((res) => {
+        console.log(res);
+      }).catch((error) => {
+        if (error.response.status == 403) {
+          this.visible = true;
+        }
+      });
+    },
+    handleOk() {
+      this.ModalText = '该对话框将在2秒后关闭';
+      this.confirmLoading = true;
+      setTimeout(() => {
+        this.visible = false;
+        this.confirmLoading = false;
+        this.$router.push('/login');
+      }, 2000);
+    },
+    handleCancel() {
+      this.visible = false;
+    },
+    handleChange(value) {
+      this.searchType = value;
+    },
     onSearch(value){
-      console.log(value);
+      let params = {"page":"1"};
+      params[this.searchType] = value;
+      this.getUsers(params);
+    },
+    onPageChange(page) {
+      this.getUsers({"page": page});
+    },
+    deleteUsers() {
+      this.selectedRows.forEach((item)=>{
+        this.deleteUser(item.id);
+        this.remove(item.key);
+      });
+      this.getUsers({"page":"1"});
+      this.selectedRows = [];
+      this.selectedRowKeys = [];
     },
     callback(key) {
       console.log(key);
@@ -127,22 +265,21 @@ export default {
     addSingle(record){
       console.log(record);
       const panes = this.panes;
-        let flag = 0;
-        let item = record;
-        console.log(item);
-        for(let j = 0; j<panes.length;j++){
-          if(panes[j].key == item.key){
-            console.log("item.key:"+item.key);
-            flag = 1;
-            break;
-          }
+      let flag = 0;
+      let item = record;
+      console.log(item);
+      for(let j = 0; j<panes.length;j++){
+        if(panes[j].key == item.key){
+          console.log("item.key:"+item.key);
+          flag = 1;
+          break;
         }
-        if(flag == 0){
-          panes.push({ title: item.name, data:item.data, key: item.key });
-         
-        }
-         this.activeKey = item.key;
-         this.panes = panes;
+      }
+      if(flag == 0){
+        panes.push({ title: item.name, data:item.data, key: item.key });
+      }
+      this.activeKey = item.key;
+      this.panes = panes;
     },
     add() {
       const panes = this.panes;
