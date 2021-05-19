@@ -160,11 +160,7 @@ const commentColumns = [
 ];
 
 export default {
-<<<<<<< HEAD
-  name:"user",
-=======
   name:"record",
->>>>>>> master
   data() {
     const panes = [
       { title: '游记管理', data:[],  key: '0' ,closable: false },

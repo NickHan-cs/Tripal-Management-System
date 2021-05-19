@@ -73,15 +73,27 @@
             </div>
           </a-descriptions-item>
           <a-descriptions-item label="广告封面" :span="3">
-              <img :src="data[pane.key-1].coverImage" width="200" alt="">
-              <a-upload
-                name="cover"
-                :multiple="false"
-                @change="coverChange"
-                style="margin-left: 30px"
-              >
-                <a-button> <a-icon type="upload" /> 更换封面 </a-button>
-              </a-upload>
+              <div class="photo" style="width:350px;height:800px;">
+                <div
+                  style="border:solid blue 1px;cursor:pointer"
+                  @click="openImg"
+                >
+                更改图片
+                  <input
+                    style="width:100%;height:100%;border:solid black 3px;"
+                    v-show="false"
+                    type="file"
+                    accept="image/*"
+                    @change="tirggerFile($event)"
+                    ref="input"
+                  />
+                  <img
+                    style="width:100%;height:100%;"
+                    :src="data[pane.key-1].coverImage"
+                  />
+                  
+                </div> 
+              </div>
           </a-descriptions-item>
         </a-descriptions>
         </div>
@@ -127,6 +139,7 @@ export default {
       { title: '广告管理', data:[],  key: '0' ,closable: false },
     ];
     return {
+      imgUrl:"",
       spinning:true,
       data:[],
       searchType: "id",
@@ -163,11 +176,64 @@ export default {
       };
     },
   },
+
   mounted(){
     this.spinning = true;
     this.getAds({"page":"1"});
   },
   methods: {
+     tirggerFile(event) {
+      let file = event.target.files[0];
+      this.files = file;
+      var reader = new FileReader();
+      reader.readAsDataURL(file);
+      if(file !== undefined){
+        this.uploadPhoto(file);
+      }
+    },
+    openImg() {
+      console.log(this.$refs.input);
+      this.$refs.input[0].click();
+    },
+    uploadPhoto(file){
+      let formData = new FormData();
+      formData.append("image", file);
+
+      this.$axios({
+        method: "post",
+        url: "/api/admin/images/",
+        params: {},
+        headers: {
+          Authorization: localStorage.getItem('Authorization')
+        },
+        data: formData
+      }).then((res) => {
+        console.log(res);
+        console.log(res.data.id);
+        this.uploadAdPhoto(res.data.id);
+      }).catch((error) => {
+        console.log(error)
+      });
+    },
+    uploadAdPhoto(id){
+         this.$axios({
+            method: "put",
+            url: "/api/admin/ads/"+ this.data[this.activeKey-1].id + "/",
+            params: {},
+            headers: {
+              Authorization: localStorage.getItem('Authorization')
+            },
+            data: {
+              "cover": id
+            }
+          }).then((res) => {
+            this.data[this.activeKey-1].coverImage = "https://tra-fr-2.zhouyc.cc/api/core/images/" + id + "/data/";
+            console.log(res);
+            
+          }).catch((error) => {
+            console.log(error)
+          });
+    },
     titleCancel() {
       this.data[this.activeKey-1].title = this.data[this.activeKey-1].preTitle;
       this.titleEditable = false;

@@ -2,19 +2,11 @@
   <div class="main">
     <div class="bg-blur"></div>
     <div>
-<<<<<<< HEAD
-      <div class="title">游迹<br>后台管理系统</div>
-      <div class="btns">
-        <a-button class="btn" type="primary" @click="toLogin">登录</a-button>
-        <a-button class="btn" type="default" @click="toRegister">注册</a-button>
-      </div>
-=======
         <div class="title">游迹<br>后台管理系统</div>
         <div class="btns">
           <a-button class="btn" type="primary" @click="toLogin">登录</a-button>
           <a-button class="btn" type="default" @click="toRegister">注册</a-button>
         </div>
->>>>>>> master
     </div>
   </div>
 </template>
@@ -50,16 +42,9 @@
   color: white;
   /* border: solid red 1px; */
 }
-<<<<<<< HEAD
-.main{
-  width:100%;
-  height:700px;
-  /* background-color: antiquewhite; */
-=======
 .main {
   width:100%;
   height:700px;
->>>>>>> master
   background-color: transparent;
 }
 .btn {
@@ -74,10 +59,6 @@
   height:100px;
   /* border: solid red 1px; */
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> master
 .bg-blur {
   background: url('../assets/home_background.png');
   height: 100%;
@@ -90,8 +71,6 @@
   z-index: -1;
   position: absolute;
 }
-<<<<<<< HEAD
-=======
 
 /* .bottom {
   width: 600px;
@@ -99,5 +78,4 @@
   padding-top: 100px;
   background-color: rgba(255, 255, 255, 0.2);
 } */
->>>>>>> master
 </style>
