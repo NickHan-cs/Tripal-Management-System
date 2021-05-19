@@ -1,36 +1,4 @@
 <template>
-<<<<<<< HEAD
-<div style="text-align:left;margin:10px 0">
-  <a-tabs v-model="activeKey" type="editable-card" @edit="onEdit" hide-add>
-    <a-tab-pane v-for="pane in panes" :key="pane.key" :tab="pane.title" :closable="pane.closable">
-      <div v-if="pane.key === '0'">
-          <a-input-search placeholder="input search text" style="width: 300px;margin:0px 10px 15px 0px"  @search="onSearch" />
-          <a-button style="margin:0 5px" type="primary" @click="add">查看</a-button>
-          <a-button  style="margin:0 5px" @click="remove">删除</a-button>
-          <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data">
-            <a slot="name" slot-scope="text, record" @click="addSingle(record)">{{ text}}</a>
-          </a-table>
-      </div>
-      <div v-else style="margin:10px 0 10px 15px;">
-        <a-descriptions title="User Info">
-        <a-descriptions-item label="UserName">
-          {{data[pane.key-1].name}}
-        </a-descriptions-item>
-        <a-descriptions-item label="Age">
-          {{data[pane.key-1].age}}
-        </a-descriptions-item>
-        <a-descriptions-item label="Remark">
-          empty
-        </a-descriptions-item>
-        <a-descriptions-item label="Address">
-         {{data[pane.key-1].address}}
-        </a-descriptions-item>
-      </a-descriptions>
-      </div>
-   
-    </a-tab-pane>
-  </a-tabs>
-=======
   <div style="text-align:left;margin:10px 0">
     <a-tabs v-model="activeKey" type="editable-card" @edit="onEdit" hide-add>
       <a-tab-pane v-for="pane in panes" :key="pane.key" :tab="pane.title" :closable="pane.closable">
@@ -102,52 +70,11 @@
       >
         <p>{{ ModalText }}</p>
       </a-modal>
->>>>>>> master
   </div>
 </template>
 <script>
 const columns = [
   {
-<<<<<<< HEAD
-    title: 'Name',
-    dataIndex: 'name',
-    scopedSlots: { customRender: 'name' },
-  },
-  {
-    title: 'Age',
-    dataIndex: 'age',
-  },
-  {
-    title: 'Address',
-    dataIndex: 'address',
-  },
-];
-
-const data = [
-  {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sidney No. 1 Lake Park',
-  },
-  {
-    key: '4',
-    name: 'Disabled User',
-    age: 99,
-    address: 'Sidney No. 1 Lake Park',
-=======
     title: '地点编号',
     dataIndex: 'id',
     scopedSlots: { customRender: 'id' },
@@ -164,44 +91,32 @@ const data = [
     title: '操作',
     key: 'action',
     scopedSlots: { customRender: 'action' },
->>>>>>> master
   },
 ];
 
 export default {
-<<<<<<< HEAD
-  name:"user",
-=======
   name:"place",
->>>>>>> master
   data() {
     const panes = [
       { title: '地点管理', data:[],  key: '0' ,closable: false },
     ];
     return {
-<<<<<<< HEAD
-      data,
-=======
       spinning:true,
       data:[],
       searchType: "id",
       searchText: "",
->>>>>>> master
       columns,
       activeKey: panes[0].key,
       panes,
       selectedRows:[],
       selectedRowKeys:[],
       newTabIndex: 0,
-<<<<<<< HEAD
-=======
       page: 1,
       pageNum: 1,
       visible: false,
       confirmLoading: false,
       ModalText: '您的登录信息已过期，请重新登录',
       descriptionEditable: false,
->>>>>>> master
     };
   },
   computed:{
@@ -222,13 +137,6 @@ export default {
     },
   },
   mounted(){
-<<<<<<< HEAD
-    this.panes[0].data = this.data;
-  },
-  methods: {
-    onSearch(value){
-      console.log(value);
-=======
     this.spinning = true;
     this.getPlaces({"page":"1"});
   },
@@ -373,7 +281,6 @@ export default {
       this.getPlaces({"page":"1"});
       this.selectedRows = [];
       this.selectedRowKeys = [];
->>>>>>> master
     },
     callback(key) {
       console.log(key);

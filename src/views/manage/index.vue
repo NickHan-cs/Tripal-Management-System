@@ -46,8 +46,6 @@
             <a-menu-item key="7">
               审核不通过
               <router-link to="/failInspect"></router-link>
-<<<<<<< HEAD
-=======
             </a-menu-item>
           </a-sub-menu>
           <a-sub-menu key="sub4">
@@ -63,7 +61,6 @@
             <a-menu-item key="17">
               审核不通过
               <router-link to="/togetherFailInspect"></router-link>
->>>>>>> master
             </a-menu-item>
           </a-sub-menu>
           <a-sub-menu key="sub3">
@@ -74,10 +71,7 @@
             </a-menu-item>
             <a-menu-item key="10">
               已推送
-<<<<<<< HEAD
-=======
               <router-link to="/oldMsg"></router-link>
->>>>>>> master
             </a-menu-item>
           </a-sub-menu>
           <a-menu-item key="11">
@@ -96,13 +90,10 @@
             <a-icon type="team" />同行管理
             <router-link to="/together"></router-link>
           </a-menu-item>
-<<<<<<< HEAD
-=======
           <a-menu-item key="18">
             <a-icon type="picture" />广告管理
             <router-link to="/ads"></router-link>
           </a-menu-item>
->>>>>>> master
         </a-menu>
       </a-layout-sider>
       <a-layout style="padding: 0 24px 24px;min-height:600px">
@@ -119,17 +110,6 @@ export default {
       collapsed: false,
     };
   },
-<<<<<<< HEAD
-  methods:{
-    onClick({key}){
-      if(key == 1){
-        console.log(key);
-      }else if(key == 2){
-        this.$router.push("/");
-      }
-      console.log(`Click on item ${key}`);
-
-=======
   created() {
   },
   mounted() {
@@ -145,7 +125,6 @@ export default {
         this.$router.push("/");
       }
       // console.log(`Click on item ${key}`);
->>>>>>> master
     }
   }
 };

@@ -4,11 +4,6 @@
     </div>
     <div class="editor-body">
       <div>
-<<<<<<< HEAD
-        <a-input></a-input>
-        <editor :content="content" @Edit="Edit" style=""></editor>
-      </div>
-=======
         <p class="title">发送系统信息</p>
         <div style="text-align: left; width: 100%; height: 40px;">
           <span style="width: 70px; display: inline-block">收件人：</span>
@@ -52,34 +47,11 @@
       >
         <p>{{ ModalText }}</p>
       </a-modal>
->>>>>>> master
     </div>
   </div>
 </template>
 
 <script>
-<<<<<<< HEAD
-import editor from "../../components/editorTool.vue";
-export default {
-  components: {
-    editor,
-  },
-  data(){
-    return{
-      content:"",
-      isEdit:true
-    }
-  },
-  methods:{
-      Edit(data) {
-        console.log(data);
-      this.content = data;
-      this.isEdit=false;
-    },
-  }
-}
-</script>
-=======
 // import editor from "../../components/editorTool.vue";
 export default {
   components: {
@@ -203,4 +175,3 @@ export default {
   text-align: left;
 }
 </style>
->>>>>>> master

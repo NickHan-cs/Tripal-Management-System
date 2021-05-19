@@ -1,36 +1,4 @@
 <template>
-<<<<<<< HEAD
-<div style="text-align:left;margin:10px 0">
-  <a-tabs v-model="activeKey" type="editable-card" @edit="onEdit" hide-add>
-    <a-tab-pane v-for="pane in panes" :key="pane.key" :tab="pane.title" :closable="pane.closable">
-      <div v-if="pane.key === '0'">
-          <a-input-search placeholder="input search text" style="width: 300px;margin:0px 10px 15px 0px"  @search="onSearch" />
-          <a-button style="margin:0 5px" type="primary" @click="add">查看</a-button>
-          <a-button  style="margin:0 5px" @click="remove">删除</a-button>
-          <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data">
-            <a slot="name" slot-scope="text, record" @click="addSingle(record)">{{ text}}</a>
-          </a-table>
-      </div>
-      <div v-else style="margin:10px 0 10px 15px;">
-        <a-descriptions title="User Info">
-        <a-descriptions-item label="UserName">
-          {{data[pane.key-1].name}}
-        </a-descriptions-item>
-        <a-descriptions-item label="Age">
-          {{data[pane.key-1].age}}
-        </a-descriptions-item>
-        <a-descriptions-item label="Remark">
-          empty
-        </a-descriptions-item>
-        <a-descriptions-item label="Address">
-         {{data[pane.key-1].address}}
-        </a-descriptions-item>
-      </a-descriptions>
-      </div>
-   
-    </a-tab-pane>
-  </a-tabs>
-=======
   <div style="text-align:left;margin:10px 0">
     <a-tabs v-model="activeKey" type="editable-card" @edit="onEdit" hide-add>
       <a-tab-pane v-for="pane in panes" :key="pane.key" :tab="pane.title" :closable="pane.closable">
@@ -138,52 +106,11 @@
       >
       <p>{{ ModalText }}</p>
     </a-modal>
->>>>>>> master
   </div>
 </template>
 <script>
 const columns = [
   {
-<<<<<<< HEAD
-    title: 'Name',
-    dataIndex: 'name',
-    scopedSlots: { customRender: 'name' },
-  },
-  {
-    title: 'Age',
-    dataIndex: 'age',
-  },
-  {
-    title: 'Address',
-    dataIndex: 'address',
-  },
-];
-
-const data = [
-  {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sidney No. 1 Lake Park',
-  },
-  {
-    key: '4',
-    name: 'Disabled User',
-    age: 99,
-    address: 'Sidney No. 1 Lake Park',
-=======
     title: '游记编号',
     dataIndex: 'id',
     scopedSlots: { customRender: 'id' },
@@ -229,7 +156,6 @@ const commentColumns = [
     title: '状态',
     dataIndex: 'status',
     width: '80px'
->>>>>>> master
   },
 ];
 
@@ -244,27 +170,17 @@ export default {
       { title: '游记管理', data:[],  key: '0' ,closable: false },
     ];
     return {
-<<<<<<< HEAD
-      data,
-      columns,
-=======
       spinning:true,
       data:[],
       searchType: "id",
       columns,
       commentColumns,
       commentSelectedRowKeys: [],
->>>>>>> master
       activeKey: panes[0].key,
       panes,
       selectedRows:[],
       selectedRowKeys:[],
       newTabIndex: 0,
-<<<<<<< HEAD
-    };
-  },
-  computed:{
-=======
       page: 1,
       pageNum: 1,
       commentPageNum: {},
@@ -287,7 +203,6 @@ export default {
         },
       }
     },
->>>>>>> master
     rowSelection() {
       return {
         onChange: (selectedRowKeys, selectedRows) => {
@@ -297,26 +212,13 @@ export default {
         },
         getCheckboxProps: record => ({
           props: {
-<<<<<<< HEAD
-            disabled: record.name === 'Disabled User', // Column configuration not to be checked
-            name: record.name,
-=======
             title: record.id,
->>>>>>> master
           },
         }),
       };
     },
   },
   mounted(){
-<<<<<<< HEAD
-    this.panes[0].data = this.data;
-  },
-  methods: {
-    onSearch(value){
-      console.log(value);
-    },
-=======
     this.spinning = true;
     this.getRecords({"page":"1"});
   },
@@ -511,7 +413,6 @@ export default {
     //   this.selectedRows = [];
     //   this.selectedRowKeys = [];
     // },
->>>>>>> master
     callback(key) {
       console.log(key);
     },
@@ -524,24 +425,6 @@ export default {
     addSingle(record){
       console.log(record);
       const panes = this.panes;
-<<<<<<< HEAD
-        let flag = 0;
-        let item = record;
-        console.log(item);
-        for(let j = 0; j<panes.length;j++){
-          if(panes[j].key == item.key){
-            console.log("item.key:"+item.key);
-            flag = 1;
-            break;
-          }
-        }
-        if(flag == 0){
-          panes.push({ title: item.name, data:item.data, key: item.key });
-         
-        }
-         this.activeKey = item.key;
-         this.panes = panes;
-=======
       let flag = 0;
       let item = record;
       console.log(item);
@@ -557,7 +440,6 @@ export default {
       }
       this.activeKey = item.key;
       this.panes = panes;
->>>>>>> master
     },
     add() {
       const panes = this.panes;
@@ -574,11 +456,7 @@ export default {
         }
         console.log("flag:"+flag);
         if(flag == 0){
-<<<<<<< HEAD
-          panes.push({ title: item.name, data:item.data, key: item.key });
-=======
           panes.push({ title: item.id, data:item.data, key: item.key });
->>>>>>> master
           i=item.key;
           console.log(i);
           this.activeKey = i;
