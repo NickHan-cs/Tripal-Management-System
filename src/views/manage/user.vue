@@ -64,7 +64,7 @@
               {{data[pane.key-1].travels}}
             </a-descriptions-item>
             <a-descriptions-item label="关注数">
-              {{data[pane.key-1].subscription.length}}
+              {{data[pane.key-1].subscription}}
             </a-descriptions-item>
             <a-descriptions-item label="粉丝数">
               {{data[pane.key-1].subscribers}}
@@ -111,21 +111,6 @@ const columns = [
   },
 ];
 
-// const data = [
-//   {
-//     key: '1',
-//     id: '18375362',
-//     name: '韩程凯',
-//     nickname: 'NickHan',
-//   },
-//   {
-//     key: '2',
-//     id: '18375363',
-//     name: '韩程凯',
-//     nickname: '2021-4-22',
-//   },
-// ];
-
 export default {
   name:"user",
   data() {
@@ -152,6 +137,7 @@ export default {
   computed:{
     rowSelection() {
       return {
+        selectedRowKeys: this.selectedRowKeys,
         onChange: (selectedRowKeys, selectedRows) => {
           console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
           this.selectedRows = selectedRows;
@@ -159,7 +145,7 @@ export default {
         },
         getCheckboxProps: record => ({
           props: {
-            disabled: record.name === 'Disabled User', // Column configuration not to be checked
+            disabled: record.name === 'Disabled User',
             title: record.id,
           },
         }),
@@ -167,14 +153,11 @@ export default {
     },
   },
   mounted(){
-    this.spinning = true;
     this.getUsers({"page":"1"});  
   },
   methods: {
-    // getImages(imageIds) {
-
-    // },
     getUsers(p) {
+      this.spinning = true;
       this.$axios({
         method: "get",
         url: "api/admin/users/",
@@ -194,7 +177,7 @@ export default {
           item.createTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
           item.positionName = item.position == null ? null : item.position.name;
           item.gender = item.gender == '0' ? '男' : '女';
-          item.iconImage = "https://tra-fr-2.zhouyc.cc/api/core/images/" + item.icon + "/data/";
+          item.iconImage = item.icon == null ? null : "https://tra-fr-2.zhouyc.cc/api/core/images/" + item.icon + "/data/";
         })
         this.panes[0].data = this.data;
         this.spinning = false;
@@ -242,6 +225,12 @@ export default {
       this.getUsers(params);
     },
     onPageChange(page) {
+      for (let i = 1; i < this.panes.length; i++) {
+        this.remove(this.panes[i].key);
+      }
+      this.panes.splice(1, this.panes.length-1);
+      this.selectedRows = [];
+      this.selectedRowKeys = [];
       this.getUsers({"page": page});
     },
     deleteUsers() {

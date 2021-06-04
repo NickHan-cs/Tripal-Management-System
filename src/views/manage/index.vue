@@ -3,23 +3,18 @@
     <a-layout-header class="header">
       <div class="avatar" >
         <a-dropdown>
-        <a-avatar icon="user">
-        </a-avatar>
-        <a-menu slot="overlay" @click="onClick">
-          <a-menu-item key="1">
-            个人设置
-          </a-menu-item>
-          <a-menu-item key="2">
-            退出登录
-          </a-menu-item>
-        </a-menu>
-      </a-dropdown>
-        
+          <a-avatar icon="user">
+          </a-avatar>
+          <a-menu slot="overlay" @click="onClick">
+            <a-menu-item key="2">
+              退出登录
+            </a-menu-item>
+          </a-menu>
+        </a-dropdown>
       </div>
       <div class="info">
         <p style="color:white;">管理员：{{username}}</p >
-        <!-- <p style="color:white;margin-top:-55px">管理员编号：{{userid}}</p> -->
-        </div>
+      </div>
       <div class="logo">游迹后台管理系统</div>
     </a-layout-header>
     <a-layout>
@@ -30,9 +25,6 @@
           :default-open-keys="['sub2']"
           :style="{ height: '100%', borderRight: 0 }"
         >
-          <!-- <a-menu-item key="1">
-              首页
-            </a-menu-item> -->
           <a-sub-menu key="sub2">
             <span slot="title"><a-icon type="laptop" />游记审核</span>
             <a-menu-item key="5">
@@ -90,6 +82,10 @@
             <a-icon type="team" />同行管理
             <router-link to="/together"></router-link>
           </a-menu-item>
+          <a-menu-item key="19">
+            <a-icon type="info-circle" />问题反馈
+            <router-link to="/feedback"></router-link>
+          </a-menu-item>
           <a-menu-item key="18">
             <a-icon type="picture" />广告管理
             <router-link to="/ads"></router-link>
@@ -124,7 +120,6 @@ export default {
         localStorage.removeItem('Username');
         this.$router.push("/");
       }
-      // console.log(`Click on item ${key}`);
     }
   }
 };

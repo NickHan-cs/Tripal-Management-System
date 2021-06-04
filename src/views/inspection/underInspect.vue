@@ -54,13 +54,13 @@
               {{data[pane.key-1].createTime}}
             </a-descriptions-item>
             <a-descriptions-item label="用户编号">
-              {{data[pane.key-1].owner.id}}
+              {{data[pane.key-1].ownerId}}
             </a-descriptions-item>
             <a-descriptions-item label="用户名称">
-              {{data[pane.key-1].owner.name}}
+              {{data[pane.key-1].ownerName}}
             </a-descriptions-item>
             <a-descriptions-item label="用户昵称">
-              {{data[pane.key-1].owner.nickname}}
+              {{data[pane.key-1].ownerNickname}}
             </a-descriptions-item>
             <a-descriptions-item label="游记内容" :span="3">
               {{data[pane.key-1].content}}
@@ -79,14 +79,14 @@
       </a-tab-pane>
     </a-tabs>
     <a-modal
-        title="提示"
-        :visible="visible"
-        :confirm-loading="confirmLoading"
-        @ok="handleOk"
-        @cancel="handleCancel"
-      >
-        <p>{{ ModalText }}</p>
-      </a-modal>
+      title="提示"
+      :visible="visible"
+      :confirm-loading="confirmLoading"
+      @ok="handleOk"
+      @cancel="handleCancel"
+    >
+      <p>{{ ModalText }}</p>
+    </a-modal>
   </div>
 </template>
 <script>
@@ -123,31 +123,6 @@ const columns = [
   },
 ];
 
-// const data = [
-//   {
-//     key: '1',
-//     titleName: 'paper 1',
-//     username: "lucy",
-//     reason: 'do not understand what you are doing',
-//   },
-//   {
-//     key: '2',
-//     titleName: 'paper 2',
-//     username: "lucy",
-//     reason: 'do not understand what you are doing',
-//   },{
-//     key: '3',
-//     titleName: 'paper 3',
-//     username: "lucy",
-//     reason: 'do not understand what you are doing',
-//   },{
-//     key: '4',
-//     titleName: 'paper 4',
-//     username: "lucy",
-//     reason: 'do not understand what you are doing',
-//   },
-// ];
-
 export default {
   name:"underInspect",
   data() {
@@ -178,8 +153,8 @@ export default {
   computed:{
     rowSelection() {
       return {
+        selectedRowKeys: this.selectedRowKeys,
         onChange: (selectedRowKeys, selectedRows) => {
-          console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
           this.selectedRows = selectedRows;
           this.selectedRowKeys = selectedRowKeys;
         },
@@ -192,7 +167,6 @@ export default {
     },
   },
   mounted(){
-    this.spinning = true;
     this.getRecords({"page": "1", "forbidden": "2"});
   },
   methods: {
@@ -204,6 +178,7 @@ export default {
       this.refuseVisible = true;
     },
     getRecords(p) {
+      this.spinning = true;
       this.$axios({
         method: "get",
         url: "api/admin/travels/",
@@ -214,20 +189,17 @@ export default {
         data: {},
       }).then((res) => {
         this.data = res.data.results;
-        // this.pageNum = res.data.pages;
         let key = 1;
         this.data.forEach((item)=>{
           item.key = key + '';
           key = key + 1;  
-          item.ownerId = item.owner.id;
-          item.ownerName = item.owner.name;
-          item.positionName = item.position.name;
+          item.ownerId = item.owner == null ? null : item.owner.id;
+          item.ownerName = item.owner == null ? null : item.owner.name;
+          item.ownerNickname = item.owner == null ? null : item.owner.nickname;
           let time_array = item.time.split("T");
           item.createTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
           item.positionName = item.position == null ? null : item.position.name;
-          if (item.cover != null) {
-            item.coverImage = "https://tra-fr-2.zhouyc.cc/api/core/images/" + item.cover + "/data/";
-          }
+          item.coverImage = item.cover == null ? null : "https://tra-fr-2.zhouyc.cc/api/core/images/" + item.cover + "/data/";
           item.recordImages = []
           item.images.forEach((image) => {
             item.recordImages.push("https://tra-fr-2.zhouyc.cc/api/core/images/" + image + "/data/");
@@ -279,6 +251,12 @@ export default {
       this.getRecords(params);
     },
     onPageChange(page) {
+      for (let i = 1; i < this.panes.length; i++) {
+        this.remove(this.panes[i].key);
+      }
+      this.panes.splice(1, this.panes.length-1);
+      this.selectedRows = [];
+      this.selectedRowKeys = [];
       this.getRecords({"page": page, "forbidden": "2"});
     },
     passSingleRecord(record) {
@@ -306,7 +284,6 @@ export default {
       this.refuseSingleVisible = false;
     },
     refuseHandleOk() {
-      // console.log(this.reason);
       this.selectedRows.forEach((item)=>{
         this.dealRecord({"id": item.id, "status": "1", "reason": this.reason});
         this.remove(item.key);
@@ -327,9 +304,6 @@ export default {
     },
     onEdit(targetKey, action) {
       this[action](targetKey);
-      console.log("targetKey:"+targetKey);
-      console.log("action:"+action);
-      console.log(this.panes);
     },
     addSingle(record){
       const panes = this.panes;
@@ -337,36 +311,30 @@ export default {
         let item = record;
         for(let j = 0; j<panes.length;j++){
           if(panes[j].key == item.key){
-            console.log("item.key:"+item.key);
             flag = 1;
             break;
           }
         }
-        if(flag == 0){
+        if (flag == 0) {
           panes.push({ title: item.id, data:item.data, key: item.key });
-         
         }
         this.activeKey = item.key;
         this.panes = panes;
     },
     add() {
       const panes = this.panes;
-      // const activeKey = `newTab${this.newTabIndex++}`;
       let i = 0;
       this.selectedRows.forEach((item)=>{
         let flag = 0;
-        for(let j = 0; j<panes.length;j++){
-          if(panes[j].key == item.key){
-            console.log("item.key:"+item.key);
+        for (let j = 0; j<panes.length; j++){
+          if (panes[j].key == item.key) {
             flag = 1;
             break;
           }
         }
-        console.log("flag:"+flag);
-        if(flag == 0){
+        if (flag == 0) {
           panes.push({ title: item.id, data:item.data, key: item.key });
           i=item.key;
-          console.log(i);
           this.activeKey = i;
         }
       })

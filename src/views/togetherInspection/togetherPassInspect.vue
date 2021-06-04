@@ -20,6 +20,10 @@
         <a-input-search placeholder="请输入搜索文本" style="width: 300px; margin:0 5px 0 2px"  @search="onSearch" />
         <a-button style="margin:0 5px 0 50px" type="primary" @click="add">查看</a-button> -->
         <a-button style="margin:0px 10px 15px 0px" type="primary" @click="add">查看</a-button>
+        <a-button  style="margin: 0 5px" @click="showModal">不通过</a-button>
+        <a-modal v-model="refuseVisible" title="不通过原因" @ok="refuseHandleOk" @cancel="refuseHandleCancel">
+          <a-textarea v-model="reason" auto-size />
+        </a-modal>
         <a-spin :spinning="spinning">
           <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
             <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text }} </a>
@@ -40,13 +44,13 @@
               {{data[pane.key-1].capacity}}
             </a-descriptions-item>
             <a-descriptions-item label="发布者编号">
-              {{data[pane.key-1].owner.id}}
+              {{data[pane.key-1].ownerId}}
             </a-descriptions-item>
             <a-descriptions-item label="发布者名称">
-              {{data[pane.key-1].owner.name}}
+              {{data[pane.key-1].ownerName}}
             </a-descriptions-item>
             <a-descriptions-item label="发布者昵称">
-              {{data[pane.key-1].owner.nickname}}
+              {{data[pane.key-1].ownerNickname}}
             </a-descriptions-item>
             <a-descriptions-item label="活动发布时间" :span="1.5">
               {{data[pane.key-1].createTime}}
@@ -124,6 +128,8 @@ export default {
       selectedRowKeys:[],
       page: 1,
       pageNum: 1,
+      refuseVisible: false,
+      reason: "",
       visible: false,
       confirmLoading: false,
       ModalText: '您的登录信息已过期，请重新登录'
@@ -132,6 +138,7 @@ export default {
   computed:{
     rowSelection() {
       return {
+        selectedRowKeys: this.selectedRowKeys,
         onChange: (selectedRowKeys, selectedRows) => {
           console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
           this.selectedRows = selectedRows;
@@ -146,11 +153,14 @@ export default {
     },
   },
   mounted(){
-    this.spinning = true;
     this.getTogethers({"page": "1", "forbidden": "0"});
   },
   methods: {
+    showModal() {
+      this.refuseVisible = true;
+    },
     getTogethers(p) {
+      this.spinning = true;
       this.$axios({
         method: "get",
         url: "api/admin/companions/",
@@ -166,8 +176,9 @@ export default {
         this.data.forEach((item)=>{
           item.key = key + '';
           key = key + 1;  
-          item.ownerId = item.owner.id;
-          item.ownerName = item.owner.name;
+          item.ownerId = item.owner == null ? null : item.owner.id;
+          item.ownerName = item.owner == null ? null : item.owner.name;
+          item.ownerNickname = item.owner == null ? null : item.owner.nickname;
           item.positionName = item.position == null ? null : item.position.name;
           let time_array = item.time.split("T");
           item.createTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
@@ -185,6 +196,36 @@ export default {
           this.visible = true;
         }
       });
+    },
+    dealTogether(d) {
+      this.$axios({
+        method: "post",
+        url: "api/admin/companions/forbid/",
+        params: {},
+        headers: {
+          Authorization: localStorage.getItem('Authorization')
+        },
+        data: d,
+      }).then((res) => {
+        console.log(res);
+      }).catch((error) => {
+        if (error.response.status == 403) {
+          this.visible = true;
+        }
+      });
+    },
+    refuseHandleOk() {
+      this.selectedRows.forEach((item)=>{
+        this.dealTogether({"id": item.id, "status": "1", "reason": this.reason});
+        this.remove(item.key);
+      });
+      this.getTogethers({"page":"1", "forbidden": "0"});
+      this.selectedRows = [];
+      this.selectedRowKeys = [];
+      this.refuseVisible = false;
+    },
+    refuseHandleCancel() {
+      this.refuseVisible = false;
     },
     handleOk() {
       this.ModalText = '该对话框将在2秒后关闭';
@@ -207,6 +248,12 @@ export default {
       this.getTogethers(params);
     },
     onPageChange(page) {
+      for (let i = 1; i < this.panes.length; i++) {
+        this.remove(this.panes[i].key);
+      }
+      this.panes.splice(1, this.panes.length-1);
+      this.selectedRows = [];
+      this.selectedRowKeys = [];
       this.getTogethers({"page": page, "forbidden": "0"});
     },
     fail(){

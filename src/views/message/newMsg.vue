@@ -91,7 +91,6 @@ export default {
         this.placeholder = "所有用户"
       } else {
         this.placeholder = ''
-        // this.placeholder = "要发送的用户"
       }
     },
     handleOk() {

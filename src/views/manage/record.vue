@@ -19,7 +19,6 @@
           </a-select>
           <a-input-search placeholder="请输入搜索文本" style="width: 300px; margin:0 5px 0 2px"  @search="onSearch" />
           <a-button style="margin:0 5px 0 50px; width: 64px; height: 32px" type="primary" @click="add">查看</a-button>
-          <!-- <a-button style="margin:0 5px; width: 130px; height: 32px"  type="primary" @click="setRecordsUnderInspect">标记为“待审核”</a-button> -->
           <a-button style="margin:0 5px; width: 64px; height: 32px" @click="deleteRecords">删除</a-button>
           <a-spin :spinning="spinning">
             <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
@@ -44,19 +43,19 @@
               {{data[pane.key-1].createTime}}
             </a-descriptions-item>
             <a-descriptions-item label="用户编号">
-              {{data[pane.key-1].owner.id}}
+              {{data[pane.key-1].ownerId}}
             </a-descriptions-item>
             <a-descriptions-item label="用户名称">
-              {{data[pane.key-1].owner.name}}
+              {{data[pane.key-1].ownerName}}
             </a-descriptions-item>
             <a-descriptions-item label="用户昵称">
-              {{data[pane.key-1].owner.nickname}}
+              {{data[pane.key-1].ownerNickname}}
             </a-descriptions-item>
             <a-descriptions-item label="阅读数">
               {{data[pane.key-1].read_total}}
             </a-descriptions-item>
             <a-descriptions-item label="评论数">
-              {{data[pane.key-1].comments.length}}
+              {{data[pane.key-1].commentLength}}
             </a-descriptions-item>
             <a-descriptions-item label="点赞数">
               {{data[pane.key-1].likes}}
@@ -73,27 +72,29 @@
               </div>
             </a-descriptions-item>
           </a-descriptions>
-          <a-descriptions title="游记评论" style="margin-top: 20px"></a-descriptions>
-          <div style="margin-bottom: 16px">
-            <a-button type="primary" :disabled="!commentHasSelected" @click="deleteComments">
+          <a-descriptions title="游记评论" style="margin-top: 20px">
+          </a-descriptions>
+          <div style="margin-bottom: 16px" :key="commentSelectedNum">
+            <a-button type="primary" :disabled="!data[pane.key-1].commentSelected" @click="deleteComments">
               删除
             </a-button>
             <span style="margin-left: 8px">
-              <template v-if="commentHasSelected">
-                {{ `已选中 ${commentSelectedRowKeys.length} 条评论` }}
+              <template v-if="data[pane.key-1].commentSelected">
+                {{ `已选中 ${data[pane.key-1].commentSelectedRowKeys.length} 条评论` }}
               </template>
             </span>
           </div>
           <a-table
-            :row-selection="commentRowSelection"
+            :row-selection="{ selectedRowKeys: data[pane.key-1].commentSelectedRowKeys, onChange: commentRowSelection}"
             :columns="commentColumns"
             :data-source="data[pane.key-1].commentData"
             :pagination="false"
+            :key="commentPage"
             rowKey="id"
           >
           </a-table>
           <br>
-          <a-pagination show-quick-jumper :page-size="1" :total="commentPageNum[activeKey - 1]" @change="onCommentPageChange" />
+          <a-pagination show-quick-jumper :page-size="1" :total="data[pane.key-1].commentPageNum" @change="onCommentPageChange" />
         </div>
       </a-tab-pane>
     </a-tabs>
@@ -171,7 +172,9 @@ export default {
       searchType: "id",
       columns,
       commentColumns,
-      commentSelectedRowKeys: [],
+      commentSelectedNum: "",
+      // commentSelectedRows:[],
+      // commentSelectedRowKeys: [],
       activeKey: panes[0].key,
       panes,
       selectedRows:[],
@@ -179,6 +182,7 @@ export default {
       newTabIndex: 0,
       page: 1,
       pageNum: 1,
+      commentPage: "page" + 1,
       commentPageNum: {},
       visible: false,
       confirmLoading: false,
@@ -187,22 +191,25 @@ export default {
     };
   },
   computed:{
-    commentHasSelected() {
-      return this.commentSelectedRowKeys.length > 0;
-    },
-    commentRowSelection() {
-      return {
-        onChange: (commentSelectedRowKeys, commentSelectedRows) => {
-          console.log(`selectedRowKeys: ${commentSelectedRowKeys}`, 'selectedRows: ', commentSelectedRows);
-          this.commentSelectedRows = commentSelectedRows;
-          this.commentSelectedRowKeys = commentSelectedRowKeys;
-        },
-      }
-    },
+    // commentHasSelected() {
+    //   return this.data[this.activeKey - 1].commentSelectedRowKeys.length > 0;
+    // },
+    // commentRowSelection() {
+    //   return {
+    //     onChange: (commentSelectedRowKeys, commentSelectedRows) => {
+    //       console.log(`selectedRowKeys: ${commentSelectedRowKeys}`, 'selectedRows: ', commentSelectedRows);
+    //       this.data[this.activeKey-1].commentSelectedRows = commentSelectedRows;
+    //       this.data[this.activeKey-1].commentSelectedRowKeys = commentSelectedRowKeys;
+    //       this.data[this.activeKey-1].commentSelected = commentSelectedRowKeys.length > 0;
+    //       this.commentSelectedNum = this.activeKey - 1 + "" + this.data[this.activeKey-1].commentSelectedRowKeys.length;
+    //     },
+    //   }
+    // },
     rowSelection() {
       return {
+        selectedRowKeys: this.selectedRowKeys,
         onChange: (selectedRowKeys, selectedRows) => {
-          console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+          // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
           this.selectedRows = selectedRows;
           this.selectedRowKeys = selectedRowKeys;
         },
@@ -215,15 +222,43 @@ export default {
     },
   },
   mounted(){
-    this.spinning = true;
     this.getRecords({"page":"1"});
   },
   methods: {
+    commentRowSelection(commentSelectedRowKeys, commentSelectedRows) {
+      console.log(`selectedRowKeys: ${commentSelectedRowKeys}`, 'selectedRows: ', commentSelectedRows);
+      this.data[this.activeKey-1].commentSelectedRows = commentSelectedRows;
+      this.data[this.activeKey-1].commentSelectedRowKeys = commentSelectedRowKeys;
+      this.data[this.activeKey-1].commentSelected = commentSelectedRowKeys.length > 0;
+      this.commentSelectedNum = this.activeKey - 1 + "" + this.data[this.activeKey-1].commentSelectedRowKeys.length;
+    },
     deleteComments() {
-
+      this.$axios({
+        method: "post",
+        url: "api/admin/comments/delete/",
+        params: {},
+        headers: {
+          Authorization: localStorage.getItem('Authorization')
+        },
+        data: {
+          id: this.data[this.activeKey - 1].commentSelectedRowKeys
+        },
+      }).then((res) => {
+        console.log(res);
+        this.data[this.activeKey - 1].commentSelectedRows = [];
+        this.data[this.activeKey - 1].commentSelectedRowKeys = [];
+        this.data[this.activeKey - 1].commentSelected = false;
+        this.commentSelectedNum = this.activeKey - 1 + "";
+        this.getComments({"travel": this.data[this.activeKey-1].id, "page": "1"},)
+      }).catch((error) => {
+        console.log(error);
+        if (error.response.status == 403) {
+          this.visible = true;
+        }
+      })
     },
     getRecords(p) {
-      console.log(localStorage.getItem('Authorization'))
+      this.spinning = true;
       this.$axios({
         method: "get",
         url: "api/admin/travels/",
@@ -235,19 +270,16 @@ export default {
       }).then((res) => {
         this.data = res.data.results;
         this.pageNum = res.data.pages;
-        let key = 1;
-        this.data.forEach((item) => {
-          item.key = key + '';
-          key = key + 1;  
-          item.ownerId = item.owner.id;
-          item.ownerName = item.owner.name;
-          item.positionName = item.position.name;
+        let dataLength = this.data.length;
+        this.data.forEach((item, index) => {
+          item.key = index + 1 + ''; 
+          item.ownerId = item.owner == null ? null : item.owner.id;
+          item.ownerName = item.owner == null ? null : item.owner.name;
+          item.ownerNickname = item.owner == null ? null : item.owner.nickname;
           let time_array = item.time.split("T");
           item.createTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
           item.positionName = item.position == null ? null : item.position.name;
-          if (item.cover != null) {
-            item.coverImage = "https://tra-fr-2.zhouyc.cc/api/core/images/" + item.cover + "/data/";
-          }
+          item.coverImage = item.cover == null ? null : "https://tra-fr-2.zhouyc.cc/api/core/images/" + item.cover + "/data/";
           item.recordImages = []
           item.images.forEach((image) => {
             item.recordImages.push("https://tra-fr-2.zhouyc.cc/api/core/images/" + image + "/data/");
@@ -258,47 +290,43 @@ export default {
           } else if (item.forbidden == "2") {
             item.status = "机器审核不通过"
           }
-          item.commentData = [];
           this.$axios({
             method: "get",
             url: "api/admin/comments/",
             params: {
-              "travel": item.id
+              "travel": item.id,
+              "page": 1,
             },
             headers: {
               Authorization: localStorage.getItem('Authorization')
             },
             data: {},
           }).then((res) => {
-            this.commentPageNum[item.key] = res.data.pages;
-            let commentList = res.data.results;
-            let commentDict = {};
-            commentList.forEach((comment) => {
+            item.commentLength = res.data.count;
+            item.commentPage = "page" + 1;
+            item.commentPageNum = res.data.pages;
+            item.commentData = res.data.results;
+            item.commentData.forEach((comment) => {
               comment.status = comment.deleted == false ? "保留" : "已删除";
-              if (comment.reply == null) {
-                comment.commentId = comment.id;
-                commentDict[comment.id] = [comment];
-              } else {
-                if (!(comment.reply in commentDict)) {
-                  commentDict[comment.reply] = []
-                }
-                comment.commentId = comment.id + " 回复 " + comment.reply;
-                commentDict[comment.reply].push(comment);
-              }
+              comment.commentId = comment.reply == null ? comment.id : comment.id + " 回复 " + comment.reply;
             })
-            for (var key in commentDict) {
-              console.log(commentDict[key]);
-              item.commentData = item.commentData.concat(commentDict[key]);
+
+            item.commentSelectedRows = [];
+            item.commentSelectedRowKeys = [];
+            item.commentSelected = false;
+            if (index + 1 == dataLength) {
+              this.panes = [this.panes[0]]
+              this.panes[0].data = this.data;
+              this.spinning = false;
             }
           }).catch((error) => {
             console.log(error);
           })
         })
-        this.panes = [this.panes[0]]
-        this.panes[0].data = this.data;
-        this.spinning = false;
+        // this.panes = [this.panes[0]]
+        // this.panes[0].data = this.data;
+        // this.spinning = false;
       }).catch((error) => {
-        console.log(error.response.status);
         if (error.response.status == 403) {
           this.visible = true;
         }
@@ -321,12 +349,6 @@ export default {
         }
       });
     },
-    // setRecordUnderInspect(recordId) {
-    //   this.$axios({
-    //     method: "",
-
-    //   })
-    // },
     handleOk() {
       this.ModalText = '该对话框将在2秒后关闭';
       this.confirmLoading = true;
@@ -343,72 +365,88 @@ export default {
       this.searchType = value;
     },
     onSearch(value){
+      this.page = 1;
       let params = {"page":"1"};
       params[this.searchType] = value;
       this.getRecords(params);
     },
     onPageChange(page) {
-      this.getRecords({"page": page});
-      // 为什么这里没有用
+      for (let i = 1; i < this.panes.length; i++) {
+        this.remove(this.panes[i].key);
+      }
+      this.panes.splice(1, this.panes.length-1);
       this.selectedRows = [];
       this.selectedRowKeys = [];
+      this.page = page;
+      this.spinning = true;
+      this.getRecords({"page": page});
     },
     getComments(p) {
-      let commentData = [];
+      console.log(p);
       this.$axios({
         method: "get",
-        url: "api/core/travels/" + p["recordId"] + "/comments/",
-        params: {"page": p["page"]},
+        url: "api/admin/comments/",
+        params: p,
         headers: {
           Authorization: localStorage.getItem('Authorization')
         },
         data: {},
       }).then((res) => {
-        this.commentPageNum[this.activeKey - 1] = res.data.pages;
-        let commentList = res.data.results;
-        let commentDict = {};
-        commentList.forEach((comment) => {
+        let commentData = res.data.results;
+        commentData.forEach((comment) => {
           comment.status = comment.deleted == false ? "保留" : "已删除";
-          if (comment.reply == null) {
-            comment.commentId = comment.id;
-            commentDict[comment.id] = [comment];
-          } else {
-            if (!(comment.reply in commentDict)) {
-              commentDict[comment.reply] = []
-            }
-            comment.commentId = comment.id + " 回复 " + comment.reply;
-            commentDict[comment.reply].push(comment);
-          }
-        })
-        for (var key in commentDict) {
-          commentData = commentData.concat(commentDict[key]);
-        }
-        this.panes[this.activeKey - 1].data.commentData = commentData;
+          comment.commentId = comment.reply == null ? comment.id : comment.id + " 回复 " + comment.reply;
+        });
+        this.data[this.activeKey-1].commentData = commentData;
+        this.commentPage = p["page"] - 1;
+        this.commentPage = this.activeKey-1 + "page" + this.commentPage;
+        this.data[this.activeKey - 1].commentSelectedRows = [];
+        this.data[this.activeKey - 1].commentSelectedRowKeys = [];
+        this.data[this.activeKey - 1].commentSelected = false;
+        this.commentSelectedNum = this.activeKey - 1 + "";
       }).catch((error) => {
         console.log(error);
       })
     },
     onCommentPageChange(commentPage) {
-      this.getComments({"recordId": this.panes[this.activeKey - 1].data.id, "page": commentPage},)
+      this.$axios({
+        method: "get",
+        url: "api/admin/comments/",
+        params: {
+          "travel": this.data[this.activeKey-1].id, 
+          "page": commentPage
+        },
+        headers: {
+          Authorization: localStorage.getItem('Authorization')
+        },
+        data: {},
+      }).then((res) => {
+        let commentData = res.data.results;
+        commentData.forEach((comment) => {
+          comment.status = comment.deleted == false ? "保留" : "已删除";
+          comment.commentId = comment.reply == null ? comment.id : comment.id + " 回复 " + comment.reply;
+        });
+        this.data[this.activeKey-1].commentData = commentData;
+        this.commentPage = this.activeKey-1 + "page" + commentPage;
+        this.data[this.activeKey - 1].commentSelectedRows = [];
+        this.data[this.activeKey - 1].commentSelectedRowKeys = [];
+        this.data[this.activeKey - 1].commentSelected = false;
+        this.commentSelectedNum = this.activeKey - 1 + "";
+      }).catch((error) => {
+        console.log(error);
+      })
+      // this.getComments({"travel": this.data[this.activeKey-1].id, "page": commentPage})
     },
     deleteRecords() {
       this.selectedRows.forEach((item)=>{
         this.deleteRecord(item.id);
         this.remove(item.key);
       });
+      this.page = 1;
       this.getRecords({"page":"1"});
       this.selectedRows = [];
       this.selectedRowKeys = [];
     },
-    // setRecordsUnderInspect() {
-    //   this.selectedRows.forEach((item)=>{
-    //     this.setRecordUnderInspect(item.id);
-    //     this.remove(item.key);
-    //   });
-    //   this.getRecords({"page": "1"});
-    //   this.selectedRows = [];
-    //   this.selectedRowKeys = [];
-    // },
     callback(key) {
       console.log(key);
     },

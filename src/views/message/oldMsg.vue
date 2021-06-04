@@ -63,33 +63,6 @@ const columns = [
   }
 ];
 
-// const data = [
-//   {
-//     key: '1',
-//     name: 'John Brown',
-//     age: 32,
-//     address: 'New York No. 1 Lake Park',
-//   },
-//   {
-//     key: '2',
-//     name: 'Jim Green',
-//     age: 42,
-//     address: 'London No. 1 Lake Park',
-//   },
-//   {
-//     key: '3',
-//     name: 'Joe Black',
-//     age: 32,
-//     address: 'Sidney No. 1 Lake Park',
-//   },
-//   {
-//     key: '4',
-//     name: 'Disabled User',
-//     age: 99,
-//     address: 'Sidney No. 1 Lake Park',
-//   },
-// ];
-
 export default {
   name:"oldMsg",
   data() {
@@ -115,6 +88,7 @@ export default {
   computed:{
     rowSelection() {
       return {
+        selectedRowKeys: this.selectedRowKeys,
         onChange: (selectedRowKeys, selectedRows) => {
           console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
           this.selectedRows = selectedRows;
@@ -130,11 +104,11 @@ export default {
     },
   },
   mounted(){
-    this.spinning = true;
     this.getMsgs({"page":"1", "type": "0"});
   },
   methods: {
     getMsgs(p) {
+      this.spinning = true;
       this.$axios({
         method: "get",
         url: "api/admin/messages/",
@@ -199,6 +173,12 @@ export default {
     //   console.log(value);
     // },
     onPageChange(page) {
+      for (let i = 1; i < this.panes.length; i++) {
+        this.remove(this.panes[i].key);
+      }
+      this.panes.splice(1, this.panes.length-1);
+      this.selectedRows = [];
+      this.selectedRowKeys = [];
       this.getMsgs({"page": page, "type": 0});
     },
     // deleteMsgs() {

@@ -49,13 +49,13 @@
               {{data[pane.key-1].capacity}}
             </a-descriptions-item>
             <a-descriptions-item label="发布者编号">
-              {{data[pane.key-1].owner.id}}
+              {{data[pane.key-1].ownerId}}
             </a-descriptions-item>
             <a-descriptions-item label="发布者名称">
-              {{data[pane.key-1].owner.name}}
+              {{data[pane.key-1].ownerName}}
             </a-descriptions-item>
             <a-descriptions-item label="发布者昵称">
-              {{data[pane.key-1].owner.nickname}}
+              {{data[pane.key-1].owneNickname}}
             </a-descriptions-item>
             <a-descriptions-item label="活动发布时间" :span="1.5">
               {{data[pane.key-1].createTime}}
@@ -121,31 +121,6 @@ const columns = [
   },
 ];
 
-// const data = [
-//   {
-//     key: '1',
-//     titleName: 'paper 1',
-//     username: "lucy",
-//     reason: 'do not understand what you are doing',
-//   },
-//   {
-//     key: '2',
-//     titleName: 'paper 2',
-//     username: "lucy",
-//     reason: 'do not understand what you are doing',
-//   },{
-//     key: '3',
-//     titleName: 'paper 3',
-//     username: "lucy",
-//     reason: 'do not understand what you are doing',
-//   },{
-//     key: '4',
-//     titleName: 'paper 4',
-//     username: "lucy",
-//     reason: 'do not understand what you are doing',
-//   },
-// ];
-
 export default {
   name:"togetherUnderInspect",
   data() {
@@ -176,6 +151,7 @@ export default {
   computed:{
     rowSelection() {
       return {
+        selectedRowKeys: this.selectedRowKeys,
         onChange: (selectedRowKeys, selectedRows) => {
           console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
           this.selectedRows = selectedRows;
@@ -190,7 +166,6 @@ export default {
     },
   },
   mounted(){
-    this.spinning = true;
     this.getTogethers({"page": "1", "forbidden": "2"});
   },
   methods: {
@@ -202,6 +177,7 @@ export default {
       this.refuseVisible = true;
     },
     getTogethers(p) {
+      this.spinning = true;
       this.$axios({
         method: "get",
         url: "api/admin/companions/",
@@ -216,8 +192,9 @@ export default {
         this.data.forEach((item)=>{
           item.key = key + '';
           key = key + 1;  
-          item.ownerId = item.owner.id;
-          item.ownerName = item.owner.name;
+          item.ownerId = item.owner == null ? null : item.owner.id;
+          item.ownerName = item.owner == null ? null : item.owner.name;
+          item.ownerNickname = item.owner == null ? null : item.owner.nickname;
           item.positionName = item.position == null ? null : item.position.name;
           let time_array = item.time.split("T");
           item.createTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
@@ -274,6 +251,12 @@ export default {
       this.getTogethers(params);
     },
     onPageChange(page) {
+      for (let i = 1; i < this.panes.length; i++) {
+        this.remove(this.panes[i].key);
+      }
+      this.panes.splice(1, this.panes.length-1);
+      this.selectedRows = [];
+      this.selectedRowKeys = [];
       this.getTogethers({"page": page, "forbidden": "2"});
     },
     passSingleTogether(record) {

@@ -11,7 +11,7 @@ Vue.use(Antd);
 Vue.prototype.$axios = axios;
 
 const axiosInstance = axios.create({
-  baseURL: "/api",
+  baseURL: process.env.NODE_ENV==="production"? "/":"/api",
   headers: {
     "content-type": "application/json",
   },

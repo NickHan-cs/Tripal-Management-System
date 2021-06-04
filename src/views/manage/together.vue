@@ -27,13 +27,13 @@
               {{data[pane.key-1].capacity}}
             </a-descriptions-item>
             <a-descriptions-item label="发布者编号">
-              {{data[pane.key-1].owner.id}}
+              {{data[pane.key-1].ownerId}}
             </a-descriptions-item>
             <a-descriptions-item label="发布者名称">
-              {{data[pane.key-1].owner.name}}
+              {{data[pane.key-1].ownerName}}
             </a-descriptions-item>
             <a-descriptions-item label="发布者昵称">
-              {{data[pane.key-1].owner.nickname}}
+              {{data[pane.key-1].ownerNickname}}
             </a-descriptions-item>
             <a-descriptions-item label="活动发布时间" :span="1.5">
               {{data[pane.key-1].createTime}}
@@ -57,6 +57,7 @@
               <a-table v-if="data[pane.key-1].fellows.length > 0" class="fellowtlb" style="width: 600px" :pagination="false" :columns="fellowColumns" :data-source="data[pane.key-1].fellows" rowKey="id">
               </a-table>
             </a-descriptions-item>
+            
           </a-descriptions>
         </div>
     
@@ -96,6 +97,10 @@ const columns = [
     title: '发布时间',
     dataIndex: 'createTime',
   },
+  {
+    title: '审核状态',
+    dataIndex: 'status',
+  },
 ];
 const fellowColumns = [
   {
@@ -112,33 +117,6 @@ const fellowColumns = [
     dataIndex: 'nickname'
   }
 ]
-
-// const data = [
-//   {
-//     key: '1',
-//     name: 'John Brown',
-//     age: 32,
-//     address: 'New York No. 1 Lake Park',
-//   },
-//   {
-//     key: '2',
-//     name: 'Jim Green',
-//     age: 42,
-//     address: 'London No. 1 Lake Park',
-//   },
-//   {
-//     key: '3',
-//     name: 'Joe Black',
-//     age: 32,
-//     address: 'Sidney No. 1 Lake Park',
-//   },
-//   {
-//     key: '4',
-//     name: 'Disabled User',
-//     age: 99,
-//     address: 'Sidney No. 1 Lake Park',
-//   },
-// ];
 
 export default {
   name:"together",
@@ -166,14 +144,13 @@ export default {
   computed:{
     rowSelection() {
       return {
+        selectedRowKeys: this.selectedRowKeys,
         onChange: (selectedRowKeys, selectedRows) => {
-          console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
           this.selectedRows = selectedRows;
           this.selectedRowKeys = selectedRowKeys;
         },
         getCheckboxProps: record => ({
           props: {
-            // disabled: record.id === 'Disabled User', // Column configuration not to be checked
             title: record.id,
           },
         }),
@@ -181,11 +158,11 @@ export default {
     },
   },
   mounted(){
-    this.spinning = true;
     this.getTogethers({"page":"1"});
   },
   methods: {
     getTogethers(p) {
+      this.spinning = true;
       this.$axios({
         method: "get",
         url: "api/admin/companions/",
@@ -201,8 +178,9 @@ export default {
         this.data.forEach((item)=>{
           item.key = key + '';
           key = key + 1;  
-          item.ownerId = item.owner.id;
-          item.ownerName = item.owner.name;
+          item.ownerId = item.owner == null ? null : item.owner.id;
+          item.ownerName = item.owner == null ? null : item.owner.name;
+          item.ownerNickname = item.owner == null ? null : item.owner.nickname;
           item.positionName = item.position == null ? null : item.position.name;
           let time_array = item.time.split("T");
           item.createTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
@@ -212,6 +190,12 @@ export default {
           item.startTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
           time_array = item.end_time.split("T");
           item.endTime = time_array[0] + " " + time_array[1].split("+")[0].split(".")[0];
+          item.status = "审核通过";
+          if (item.forbidden == "1") {
+            item.status = "人工审核不通过"
+          } else if (item.forbidden == "2") {
+            item.status = "机器审核不通过"
+          }
         })
         this.panes[0].data = this.data;
         this.spinning = false;
@@ -251,6 +235,12 @@ export default {
       this.visible = false;
     },
     onPageChange(page) {
+      for (let i = 1; i < this.panes.length; i++) {
+        this.remove(this.panes[i].key);
+      }
+      this.panes.splice(1, this.panes.length-1);
+      this.selectedRows = [];
+      this.selectedRowKeys = [];
       this.getTogethers({"page": page});
     },
     deleteTogethers() {
@@ -293,22 +283,18 @@ export default {
     },
     add() {
       const panes = this.panes;
-      // const activeKey = `newTab${this.newTabIndex++}`;
       let i = 0;
       this.selectedRows.forEach((item)=>{
         let flag = 0;
         for(let j = 0; j<panes.length;j++){
           if(panes[j].key == item.key){
-            console.log("item.key:"+item.key);
             flag = 1;
             break;
           }
         }
-        console.log("flag:"+flag);
         if(flag == 0){
           panes.push({ title: item.id, data:item.data, key: item.key });
           i=item.key;
-          console.log(i);
           this.activeKey = i;
         }
       })

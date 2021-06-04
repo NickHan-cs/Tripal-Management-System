@@ -32,67 +32,72 @@ const routes = [
     children: [
       {
         path: "/underInspect",
-        name:"underInspect",
+        name: "underInspect",
         component: () => import("../views/inspection/underInspect.vue"),
       },
       {
         path: "/passInspect",
-        name:"passInspect",
+        name: "passInspect",
         component: () => import("../views/inspection/passInspect.vue"),
       },
       {
         path: "/failInspect",
-        name:"failInspect",
+        name: "failInspect",
         component: () => import("../views/inspection/failInspect.vue"),
       },
       {
         path: "/togetherUnderInspect",
-        name:"togetherUnderInspect",
+        name: "togetherUnderInspect",
         component: () => import("../views/togetherInspection/togetherUnderInspect.vue"),
       },
       {
         path: "/togetherPassInspect",
-        name:"togetherPassInspect",
+        name: "togetherPassInspect",
         component: () => import("../views/togetherInspection/togetherPassInspect.vue"),
       },
       {
         path: "/togetherFailInspect",
-        name:"togetherFailInspect",
+        name: "togetherFailInspect",
         component: () => import("../views/togetherInspection/togetherFailInspect.vue"),
       },
       {
         path: "/newMsg",
-        name:"newMsg",
+        name: "newMsg",
         component: () => import("../views/message/newMsg.vue"),
       },
       {
         path: "/oldMsg",
-        name:"oldMsg",
+        name: "oldMsg",
         component: () => import("../views/message/oldMsg.vue"),
       },
       {
         path: "/user",
-        name:"user",
+        name: "user",
         component: () => import("../views/manage/user.vue"),
       },
       {
         path: "/record",
-        name:"record",
+        name: "record",
         component: () => import("../views/manage/record.vue"),
       },
       {
         path: "/place",
-        name:"place",
+        name: "place",
         component: () => import("../views/manage/place.vue"),
       },
       {
         path: "/together",
-        name:"together",
+        name: "together",
         component: () => import("../views/manage/together.vue"),
       },
       {
+        path: "/feedback",
+        name: "feedback",
+        component: () => import("../views/manage/feedback.vue"),
+      },
+      {
         path: "/ads",
-        name:"ads",
+        name: "ads",
         component: () => import("../views/manage/ads.vue"),
       },
     ]

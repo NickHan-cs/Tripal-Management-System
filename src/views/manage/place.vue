@@ -13,7 +13,29 @@
           </a-select>
           <a-input-search placeholder="请输入搜索文本" style="width: 300px; margin:0 5px 0 2px"  @search="onSearch" />
           <a-button style="margin:0 5px 0 50px" type="primary" @click="add">查看</a-button>
-          <a-button  style="margin:0 5px" @click="deletePlaces">删除</a-button>
+          <!-- <a-button style="margin:0 5px" @click="deletePlaces">删除</a-button> -->
+          <a-button style="margin:0 5px" type="primary" @click="showAddImgModal">添加图片</a-button>
+          <a-modal v-model="addImgModalVisible" title="添加地点图片" @ok="addImgOk" @cancel="addImgCancel">
+            <a-form>
+              <a-form-item label="地点编号：">
+                <a-input placeholder="请输入地点编号" v-model="placeId" />
+              </a-form-item>
+              <a-form-item label="地点图片：">
+                <input id="uploadFile" type="file" multiple ref="placeImgs" @change="imgChange" accept="image/*" >
+              </a-form-item>
+            </a-form>
+          </a-modal>
+          <a-button style="margin:0 5px" @click="showUpdateCoverModal">更换封面</a-button>
+          <a-modal v-model="updateCoverModalVisible" title="更换地点封面" @ok="updateCoverOk" @cancel="updateCoverCancel">
+            <a-form>
+              <a-form-item label="地点编号：">
+                <a-input placeholder="请输入地点编号" v-model="placeId" />
+              </a-form-item>
+              <a-form-item label="地点封面：">
+                <input type="file" ref="placeCover" @change="coverChange" accept="image/*" >
+              </a-form-item>
+            </a-form>
+          </a-modal>
           <a-spin :spinning="spinning">
             <a-table :row-selection="rowSelection" :columns="columns" :data-source="pane.data" :pagination="false">
               <a slot="id" slot-scope="text, record" @click="addSingle(record)">{{ text}}</a>
@@ -27,15 +49,15 @@
           </a-spin>
         </div>
         <div v-else style="margin:10px 0 10px 15px;">
-          <a-descriptions title="地点信息">
+          <a-descriptions title="地点信息" bordered>
           <a-descriptions-item label="地点编号" :span="3">
             {{data[pane.key-1].id}}
           </a-descriptions-item>
           <a-descriptions-item label="地点名称" :span="3">
             {{data[pane.key-1].name}}
           </a-descriptions-item>
-          <a-descriptions-item label="地点描述" :span="3">
-            <div v-if="descriptionEditable">
+          <a-descriptions-item label="地点描述" :span="3" :key="descriptionEditable">
+            <div v-if="data[pane.key-1].descriptionEditable">
               <a-textarea v-model="data[pane.key-1].description" style="width: 700px" auto-size/>
               <a-button style="margin-left: 40px; width: 64px; height: 32px" type="primary" @click="descriptionSave">保存</a-button>
               <a-button style="margin-left: 20px; width: 64px; height: 32px" @click="descriptionCancel">取消</a-button>
@@ -50,11 +72,13 @@
               />
             </div>
           </a-descriptions-item>
+          <a-descriptions-item label="地点封面" :span="3">
+            <img :src="data[pane.key-1].placeCover" width="200" alt="">
+          </a-descriptions-item>
           <a-descriptions-item label="地点图片" :span="3">
-            <div v-if="descriptionEditable">
-
-            </div>
-            <div v-else >
+            <div v-for="item in data[pane.key-1].placeImages" :key="item">
+              <img :src="item" width="200" alt="">
+              <a-button style="margin-left: 40px; width: 64px; height: 32px" type="primary" @click="deletePlaceImages(item)">删除</a-button>
             </div>
           </a-descriptions-item>
         </a-descriptions>
@@ -116,12 +140,18 @@ export default {
       visible: false,
       confirmLoading: false,
       ModalText: '您的登录信息已过期，请重新登录',
-      descriptionEditable: false,
+      descriptionEditable: "",
+      addImgModalVisible: false,
+      updateCoverModalVisible: false,
+      placeId: "",
+      placeImgs: null,
+      placeCover: null
     };
   },
   computed:{
     rowSelection() {
       return {
+        selectedRowKeys: this.selectedRowKeys,
         onChange: (selectedRowKeys, selectedRows) => {
           console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
           this.selectedRows = selectedRows;
@@ -137,16 +167,119 @@ export default {
     },
   },
   mounted(){
-    this.spinning = true;
     this.getPlaces({"page":"1"});
   },
   methods: {
+    coverChange() {
+      this.placeCover = this.$refs.placeCover[0].files[0];
+    },
+    updateCoverOk() {
+      if (this.placeId == "") {
+        alert("地点编号不能为空");
+      } else if (this.placeCover == null) {
+        alert("地点封面不能为空");
+      } else {
+        const coverData = new FormData();
+        coverData.append("image", this.placeCover);
+        this.$axios({
+          method: "post",
+          url: "/api/admin/position/" + this.placeId + "/cover/",
+          params: {},
+          headers: {
+            Authorization: localStorage.getItem('Authorization')
+          },
+          data: coverData
+        }).then((res) => {
+          console.log(res);
+          this.placeId = "";
+          this.placeCover = null;
+          this.updateCoverModalVisible = false;
+          this.getPlaces({"page":"1"});
+          this.selectedRows = [];
+          this.selectedRowKeys = [];
+        }).catch((error) => {
+          console.log(error);
+        });
+      }
+    },
+    updateCoverCancel() {
+      this.placeId = "";
+      this.placeCover = null;
+      this.updateCoverModalVisible = false;
+    },
+    showUpdateCoverModal() {
+      this.updateCoverModalVisible = true;
+    },
+    imgChange() {
+      this.placeImgs = this.$refs.placeImgs[0].files[0]; 
+    },
+    addImgOk() {
+      console.log(this.placeImgs);
+      if (this.placeId == "") {
+        alert("地点编号不能为空");
+      } else if (this.placeImgs == null) {
+        alert("地点图片不能为空");
+      } else {
+        const imgData = new FormData();
+        imgData.append("image", this.placeImgs);
+        this.$axios({
+          method: "post",
+          url: "/api/admin/position/" + this.placeId + "/image/",
+          params: {},
+          headers: {
+            Authorization: localStorage.getItem('Authorization')
+          },
+          data: imgData
+        }).then((res) => {
+          console.log(res);
+          this.placeId = "";
+          this.placeImgs = null;
+          document.getElementById('uploadFile').value = null;
+          this.addImgModalVisible = false;
+          this.getPlaces({"page":"1"});
+          this.selectedRows = [];
+          this.selectedRowKeys = [];
+        }).catch((error) => {
+          console.log(error);
+        });
+      }
+    },
+    addImgCancel() {
+      this.placeId = "";
+      this.placeImgs = null;
+      this.addImgModalVisible = false;
+      document.getElementById('uploadFile').value = null;
+    },
+    deletePlaceImages(imageUrl) {
+      let imageId = imageUrl.split("/")[6];
+      this.$axios({
+        method: "delete",
+        url: "/api/admin/position/" + this.data[this.activeKey-1].id + "/image/",
+        params: {},
+        headers: {
+          Authorization: localStorage.getItem('Authorization')
+        },
+        data: {
+          id: [imageId]
+        }
+      }).then((res) => {
+        console.log(res);
+        this.getPlaces({"page":"1"});
+        this.selectedRows = [];
+        this.selectedRowKeys = [];
+      }).catch((error) => {
+        console.log(error);
+      });
+    },
+    showAddImgModal() {
+      this.addImgModalVisible = true;
+    },
     descriptionCancel() {
       this.data[this.activeKey-1].description = this.data[this.activeKey-1].preDescription;
-      this.descriptionEditable = false;
+      this.data[this.activeKey-1].descriptionEditable = false;
+      this.descriptionEditable = this.activeKey - 1 + "" + "false";
     },
     descriptionSave() {
-      // console.log(this.data[this.activeKey-1].description);
       this.$axios({
         method: "put",
         url: "/api/admin/position/" + this.data[this.activeKey-1].id + "/",
@@ -164,15 +297,16 @@ export default {
           this.visible = true;
         }
       })
-      // 将this.data[this.activeKey-1].description上传到后端
-      this.descriptionEditable = false;
+      this.data[this.activeKey-1].descriptionEditable = false;
+      this.descriptionEditable = this.activeKey - 1 + "" + "false";
     },
     descriptionEdit() {
       this.data[this.activeKey-1].preDescription = this.data[this.activeKey-1].description;
-      this.descriptionEditable = true;
+      this.data[this.activeKey-1].descriptionEditable = true;
+      this.descriptionEditable = this.activeKey - 1 + "" + "true";
     },
     getPlaces(p) {
-      // 如果page超过pages了，捕捉404错误码？
+      this.spinning = true;
       this.$axios({
         method: "get",
         url: "api/admin/position/",
@@ -190,6 +324,11 @@ export default {
           key = key + 1;
           item.status = item.visibility == false ? '未上架' : '已上架';
           item.preDescription = item.description;
+          item.placeImages = [];
+          item.images.forEach((image) => {
+            item.placeImages.push("https://tra-fr-2.zhouyc.cc/api/core/images/" + image + "/data/");
+          })
+          item.placeCover = "https://tra-fr-2.zhouyc.cc/api/core/images/" + item.cover + "/data/";
         })
         this.panes[0].data = this.data;
         this.spinning = false;
@@ -269,6 +408,12 @@ export default {
       this.getPlaces(params);
     },
     onPageChange(page) {
+      for (let i = 1; i < this.panes.length; i++) {
+        this.remove(this.panes[i].key);
+      }
+      this.panes.splice(1, this.panes.length-1);
+      this.selectedRows = [];
+      this.selectedRowKeys = [];
       let params = {"page": page};
       params[this.searchType] = this.searchText;
       this.getPlaces(params);
